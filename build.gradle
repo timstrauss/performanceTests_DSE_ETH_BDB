@@ -1,0 +1,124 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.61'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
+    implementation ('org.web3j:core:4.5.14')
+    implementation group: 'com.datastax.oss', name: 'java-driver-core', version: '4.6.1'
+    implementation group: 'com.datastax.oss', name: 'java-driver-query-builder', version: '4.6.1'
+    implementation group: 'com.bigchaindb', name: 'bigchaindb-driver', version: '1.2'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+boolean isWindows = System.getProperty("os.name").startsWith("Windows")
+
+task generateSols {
+    doLast {
+        int pathIndex = System.getProperty("user.dir").lastIndexOf("barbeit") + 7
+        String source = System.getProperty("user.dir").substring(0,pathIndex)
+
+        //Get Sol Files
+        File dir
+        if (isWindows) {
+            dir = new File(source + "\\src\\main\\resources")
+        } else {
+            dir = new File(source + "/src/main/resources")
+        }
+        File [] files = dir.listFiles(new FilenameFilter() {
+            @Override
+            boolean accept(File dir2, String name) {
+                return name.endsWith(".sol")
+            }
+        })
+
+        for (File file : files) {
+            int index = file.getName().lastIndexOf(".")
+            String fileName = file.getName().substring(0,index)
+
+            //Generate Binary
+            ProcessBuilder solBinBuilder = new ProcessBuilder()
+            if (isWindows) {
+                solBinBuilder.command("cmd.exe",
+                        "/c",
+                        "solc " + source + "\\src\\main\\resources\\" + fileName + ".sol --bin --overwrite --abi --optimize -o " + source + "\\binSmartContracts")
+            } else {
+                solBinBuilder.command("bash",
+                        "-c",
+                        "solc " + source + "/src/main/resources/" + fileName + ".sol --bin --overwrite --abi --optimize -o " + source + "/binSmartContracts")
+            }
+            try {
+                Process process = solBinBuilder.start()
+                process.waitFor()
+                if (process.exitValue() != 0) {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(
+                            process.getErrorStream()), 13107200);
+
+                    String line = null;
+
+                    while ((line = input.readLine()) != null) {
+                        System.out.println(line);
+                    }
+
+                    throw new GradleException("ERROR during compilation of " + fileName)
+                }
+            } catch (IOException e) {
+            } catch (InterruptedException e) {
+            }
+
+            //Generate Java Classes
+            ProcessBuilder javaClassFromSolGenerator = new ProcessBuilder()
+            if (isWindows) {
+                javaClassFromSolGenerator.command("cmd.exe",
+                        "/c",
+                        "web3j solidity generate -b " + source + "\\binSmartContracts\\" + fileName + ".bin -a "
+                                + source + "\\binSmartContracts\\" + fileName + ".abi -o "
+                                + source + "\\src\\main\\java -p de.hpi.cc.datasource.decentralized.ethereum.smartcontracts")
+            } else {
+                javaClassFromSolGenerator.command("bash",
+                        "-c",
+                        "web3j solidity generate -b " + source + "/binSmartContracts/" + fileName + ".bin -a "
+                                + source + "/binSmartContracts/" + fileName + ".abi -o "
+                                + source + "/src/main/java -p de.hpi.cc.datasource.decentralized.ethereum.smartcontracts")
+            }
+            try {
+                Process process = javaClassFromSolGenerator.start()
+                process.waitFor()
+                if (process.exitValue() != 0) {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(
+                            process.getErrorStream()), 13107200);
+
+                    String line = null;
+                    while ((line = input.readLine()) != null) {
+                        System.out.println(line);
+                    }
+
+                    throw new GradleException("ERROR during java generation of " + fileName)
+                }
+            } catch (IOException e) {
+                e.printStackTrace()
+            } catch (InterruptedException e) {
+                e.printStackTrace()
+            }
+        }
+    }
+}
+
+compileKotlin.dependsOn generateSols
+compileJava.dependsOn generateSols

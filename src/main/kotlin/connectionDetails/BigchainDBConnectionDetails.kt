@@ -1,0 +1,5 @@
+package connectionDetails
+
+class BigchainDBConnectionDetails (){
+
+}
