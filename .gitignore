@@ -1,0 +1,5 @@
+binSmartContracts/
+build/
+src/main/java/de/hpi/cc/datasource/decentralized/ethereum/smartcontracts/
+.gradle
+.idea
