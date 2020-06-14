@@ -1,3 +1,5 @@
+@file:JvmName("EthTest")
+
 import com.google.common.hash.Hashing
 import connectionDetails.CassandraConnectionDetails
 import connectionDetails.EthereumConnectionDetails

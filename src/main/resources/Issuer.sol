@@ -169,8 +169,6 @@ contract Issuer {
                 revocationLookup[revocationHashes[revocationHashes.length - 1]] = index;
                 delete revocationHashes[revocationHashes.length - 1];
                 delete revocationStatuses[revocationStatuses.length - 1];
-                revocationHashes.length--;
-                revocationStatuses.length--;
                 revocationLookup[credentialHash] = 0;
             }
             // else: entry does not exist and status is 0: do nothing

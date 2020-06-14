@@ -29,9 +29,14 @@ compileTestKotlin {
 
 boolean isWindows = System.getProperty("os.name").startsWith("Windows")
 
+task runEthTests(type: JavaExec) {
+	main = 'EthTest'
+	classpath = sourceSets.main.runtimeClasspath
+}
+
 task generateSols {
     doLast {
-        int pathIndex = System.getProperty("user.dir").lastIndexOf("barbeit") + 7
+        int pathIndex = System.getProperty("user.dir").lastIndexOf("performanceTests_DSE_ETH_BDB") + 28
         String source = System.getProperty("user.dir").substring(0,pathIndex)
 
         //Get Sol Files
