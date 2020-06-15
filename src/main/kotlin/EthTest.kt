@@ -6,6 +6,7 @@ import connectionDetails.EthereumConnectionDetails
 import issuer.AbstractIssuer
 import issuer.EthIssuer
 import java.util.*
+import kotlin.concurrent.thread
 
 fun main() {
     val con = EthereumConnectionDetails("http://localhost:8545")
@@ -30,10 +31,19 @@ fun main() {
         pKey,
         listOf(key2, key3)
     )
-    val start = Date()
-    for (i in 0 until 5000) {
+    val start = System.currentTimeMillis()
+    var amount = IntArray(10) { 0 }
+    for (i in 0 until 10) {
+        thread(true) {
+            val index = i
+            while (System.currentTimeMillis() - start < 40000) {
+                issuer.domain
+                amount[index]++
+            }
+        }
+    }
+    while (System.currentTimeMillis() - start < 42000) {
         issuer.domain
     }
-    val end = Date()
-    println(end.time - start.time)
+    println(amount.joinToString("|"))
 }

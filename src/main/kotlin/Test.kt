@@ -5,6 +5,7 @@ import connectionDetails.CassandraConnectionDetails
 import issuer.AbstractIssuer
 import issuer.CassandraIssuer
 import java.util.*
+import kotlin.concurrent.thread
 
 fun main() {
     val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
@@ -30,11 +31,19 @@ fun main() {
         pKey,
         listOf(key2, key3)
     )
-    val start = Date()
-    for (i in 0 until 5000) {
+    val start = System.currentTimeMillis()
+    var amount = 0
+    for (i in 0 until 10) {
+        thread(true) {
+            while (System.currentTimeMillis() - start < 40000) {
+                issuer.domain
+                amount++
+            }
+        }
+    }
+    while (System.currentTimeMillis() - start < 42000) {
         issuer.domain
     }
-    val end = Date()
-    println(end.time - start.time)
+    println(amount)
     con.closeSession()
 }
