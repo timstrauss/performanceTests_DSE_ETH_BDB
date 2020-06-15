@@ -34,6 +34,16 @@ task runEthTests(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 }
 
+task runDSETests(type: JavaExec) {
+    main = 'DSETest'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task runDSESetup(type: JavaExec) {
+    main = "SetupDSE"
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 task generateSols {
     doLast {
         int pathIndex = System.getProperty("user.dir").lastIndexOf("performanceTests_DSE_ETH_BDB") + 28

@@ -1,3 +1,5 @@
+@file:JvmName("DSETest")
+
 import com.google.common.hash.Hashing
 import connectionDetails.CassandraConnectionDetails
 import issuer.AbstractIssuer
