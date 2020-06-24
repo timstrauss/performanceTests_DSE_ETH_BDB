@@ -53,7 +53,9 @@ class EthIssuer : AbstractIssuer {
 
     override var domain: String
         get() = issuerContract.domain.send()
-        set(value) { issuerContract.setDomain(value).send() }
+        set(value) {
+            issuerContract.setDomain(value).send()
+        }
     override var signedAddress: String
         get() = issuerContract.signedAddress.send()
         set(value) { issuerContract.setSignedAddress(value).send() }

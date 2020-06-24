@@ -85,11 +85,16 @@ class CassandraIssuer: AbstractIssuer {
 
     override var domain: String
         get() = connectionDetails.executeSingleStatement(
-            selectFrom(CassandraUtils.getSpaceNameForUser(owner), TableNames.ISSUERS_TABLE.tableName)
+            /*selectFrom(CassandraUtils.getSpaceNameForUser(owner), TableNames.ISSUERS_TABLE.tableName)
                 .column("domain")
-                .whereColumn("id").isEqualTo(literal(uuid)).build().query
+                .whereColumn("id").isEqualTo(literal(uuid)).build().query*/
+            "SELECT domain FROM \"${CassandraUtils.getSpaceNameForUser(owner)}\".\"${TableNames.ISSUERS_TABLE.tableName}\" where id = '$uuid'"
         ).one()?.getString(0) ?: ""
-        set(value) {}
+        set(value) {
+            connectionDetails.executeSingleStatement(
+                "UPDATE \"${CassandraUtils.getSpaceNameForUser(owner)}\".\"${TableNames.ISSUERS_TABLE.tableName}\" SET domain = '$value' WHERE id = '$uuid'"
+            )
+        }
     override var signedAddress: String
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
         set(value) {}
