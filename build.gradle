@@ -31,7 +31,7 @@ compileTestKotlin {
 boolean isWindows = System.getProperty("os.name").startsWith("Windows")
 
 task runEthGenericTests(type: JavaExec) {
-	main = 'GenericEthTest'
+	main = 'genericTests.GenericEthTest'
 	classpath = sourceSets.main.runtimeClasspath
 }
 
