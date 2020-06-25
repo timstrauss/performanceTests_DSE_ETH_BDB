@@ -1,6 +1,6 @@
 #!/bin/bash
 cd bootNode || exit
-BOOTNODE_ADD=192.20.8.222
+BOOTNODE_ADD=172.20.8.222
 enode=$(cat enodeAdd)
 partone=$(echo "$enode" | cut -d @ -f1)
 partthree=$(echo "$enode" | cut -d @ -f2 | cut -d : -f2)

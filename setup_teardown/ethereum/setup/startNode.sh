@@ -1,6 +1,6 @@
 #!/bin/bash
 cd bootNode || exit
-NODE_HOST=192.20.8.222
+NODE_HOST=172.20:30310
 /bin/bash ./startBootNode.sh
 enode=$(cat enodeAdd)
 partone=$(echo "$enode" | cut -d @ -f1)
