@@ -1,19 +1,20 @@
 package genericTests.bigchaindb
 
-import com.bigchaindb.api.AssetsApi
-import com.bigchaindb.api.TransactionsApi
 import com.bigchaindb.builders.BigchainDbTransactionBuilder
 import com.bigchaindb.constants.Operations
 import com.bigchaindb.model.FulFill
 import com.bigchaindb.model.GenericCallback
 import com.bigchaindb.model.MetaData
-import com.google.gson.internal.LinkedTreeMap
+import com.mongodb.BasicDBObject
+import com.mongodb.MongoClient
+import com.mongodb.client.model.Filters
 import connectionDetails.BigchainDBConnectionDetails
 import genericTests.TestThread
 import genericTests.TimeToRun
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import okhttp3.Response
+import org.bson.Document
 import java.io.File
 import java.util.*
 
@@ -44,36 +45,50 @@ object BDBIntTests {
         executeTests(threads, timePerTest, uuid, con)
     }
 
-    private class SetIntThread(time: Long, threadNum: Int, workerThreads: Int, val uuid: String, val con: BigchainDBConnectionDetails): TestThread(workerThreads, threadNum, time, true, "setInt", "bdb") {
+    private class SetIntThread(
+        time: Long,
+        threadNum: Int,
+        workerThreads: Int,
+        val uuid: String,
+        val con: BigchainDBConnectionDetails,
+        val mongoClient: MongoClient = MongoClient()
+    ) : TestThread(workerThreads, threadNum, time, true, "setInt", "bdb") {
         var success: Boolean? = null
 
         override fun testFunc(): Boolean {
             success = null
-            val assetId = AssetsApi.getAssetsWithLimit(uuid + " intvar", "1").assets[0].id
-            val latestMetaData: LinkedTreeMap<String, String>
-            var latestMetaDataId: String
-            val transfers = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions
-            if (transfers.size > 0) {
-                latestMetaData = transfers.last().metaData as LinkedTreeMap<String, String>
-                latestMetaDataId = transfers.last().id
-            } else {
-                latestMetaData = TransactionsApi.getTransactionById(assetId).metaData as LinkedTreeMap<String, String>
-                latestMetaDataId = assetId
-            }
-            if (latestMetaData["value"]!!.toInt() == setValue as Int) {
+            val db = mongoClient.getDatabase("bigchain")
+            val assetCollection = db.getCollection("assets")
+            val transactionsCollection = db.getCollection("transactions")
+            val metadataCollection = db.getCollection("metadata")
+            val assetId = assetCollection.find(
+                Filters.and(
+                    BasicDBObject("data", BasicDBObject("property", "intvar")),
+                    BasicDBObject("data", BasicDBObject("uuid", uuid))
+                )
+            ).first()?.getString("id") ?: return false
+            val metadataId = transactionsCollection.find(
+                BasicDBObject(
+                    "asset",
+                    BasicDBObject("id", assetId)
+                )
+            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            val metadataValue = (metadataCollection.find(
+                BasicDBObject(
+                    "id",
+                    metadataId
+                )
+            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
+            if (metadataValue.toInt() == setValue as Int) {
                 return true
-            }
-            if (latestMetaDataId.startsWith("\"") && latestMetaDataId.endsWith("\"")) {
-                latestMetaDataId = latestMetaDataId.substring(1, latestMetaDataId.length-1)
             }
             val fulFill = FulFill()
             fulFill.outputIndex = 0
-            fulFill.transactionId = latestMetaDataId
-            val previousSize = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions.size
+            fulFill.transactionId = metadataId
             val tt: String? = null
             val metadata = MetaData()
             metadata.setMetaData("value", (setValue as Int).toString())
-            val trans = BigchainDbTransactionBuilder
+            BigchainDbTransactionBuilder
                 .init()
                 .addMetaData(metadata)
                 .addAssets(assetId, String::class.java)
@@ -84,7 +99,9 @@ object BDBIntTests {
                 .sendTransaction(CallBackBDB() {
                     success = it
                 })
-            while (success == null) { sleep(0,1) }
+            while (success == null) {
+                sleep(0, 1)
+            }
             return success!!
         }
 
@@ -93,10 +110,37 @@ object BDBIntTests {
         }
     }
 
-    private class GetIntThread(time: Long, threadNum: Int, workerThreads: Int, val uuid: String, val con: BigchainDBConnectionDetails): TestThread(workerThreads, threadNum, time, false, "getInt", "bdb") {
+    private class GetIntThread(
+        time: Long,
+        threadNum: Int,
+        workerThreads: Int,
+        val uuid: String,
+        val con: BigchainDBConnectionDetails,
+        val mongoClient: MongoClient = MongoClient()
+    ) : TestThread(workerThreads, threadNum, time, false, "getInt", "bdb") {
         override fun testFunc(): Boolean {
-            val assetId = AssetsApi.getAssetsWithLimit(uuid + " intvar", "1").assets[0].id
-            val latestVal = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions.last().metaData
+            val db = mongoClient.getDatabase("bigchain")
+            val assetCollection = db.getCollection("assets")
+            val transactionsCollection = db.getCollection("transactions")
+            val metadataCollection = db.getCollection("metadata")
+            val assetId = assetCollection.find(
+                Filters.and(
+                    BasicDBObject("data", BasicDBObject("property", "intvar")),
+                    BasicDBObject("data", BasicDBObject("uuid", uuid))
+                )
+            ).first()?.getString("id") ?: return false
+            val metadataId = transactionsCollection.find(
+                BasicDBObject(
+                    "asset",
+                    BasicDBObject("id", assetId)
+                )
+            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            val metadataValue = (metadataCollection.find(
+                BasicDBObject(
+                    "id",
+                    metadataId
+                )
+            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
             return true
         }
     }

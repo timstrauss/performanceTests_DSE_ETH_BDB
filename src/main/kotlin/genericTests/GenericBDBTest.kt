@@ -7,7 +7,7 @@ import genericTests.bigchaindb.BDBIntTests
 import genericTests.bigchaindb.BDBStringTests
 
 fun main() {
+    BDBStringTests.run(2)
     BDBBoolTests.run(2)
     BDBIntTests.run(2)
-    BDBStringTests.run(2)
 }
