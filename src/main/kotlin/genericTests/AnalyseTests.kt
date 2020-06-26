@@ -1,3 +1,5 @@
+@file:JvmName("Analyze")
+
 package genericTests
 
 import java.io.File
