@@ -16,7 +16,7 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
         benchmarkFile.createNewFile()
         thread(true) {
             while (time > 0) {
-                benchmarkFile.appendText(setText(""))
+                benchmarkFile.appendText(setText("", true))
                 sleep(1000)
             }
         }
@@ -26,7 +26,7 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
         val transactionStartFirst: Long = System.nanoTime()
         testFunc()
         val transactionEndFirst: Long = System.nanoTime()
-        setText("${(transactionEndFirst - transactionStartFirst) / 1000}|$threadNum")
+        setText("${(transactionEndFirst - transactionStartFirst) / 1000}|$threadNum", false)
         time -= ((transactionEndFirst - transactionStartFirst) / 1000000).toInt()
         while(0 < time) {
             if (setTest) {
@@ -35,7 +35,7 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
             val transactionStart: Long = System.nanoTime()
             testFunc()
             val transactionEnd: Long = System.nanoTime()
-            setText("\n${(transactionEnd - transactionStart) / 1000}|$threadNum")
+            setText("\n${(transactionEnd - transactionStart) / 1000}|$threadNum", false)
             time -= (transactionEnd - transactionStart)
         }
     }
@@ -49,9 +49,13 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
     }
 
     @Synchronized
-    private fun setText(addVal: String): String {
+    private fun setText(addVal: String, reset: Boolean): String {
         val returnVal = text
-        text += addVal
+        if (reset) {
+            text = ""
+        } else {
+            text += addVal
+        }
         return returnVal
     }
 }

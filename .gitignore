@@ -1,4 +1,5 @@
 binSmartContracts/
+benchmarks/
 build/
 src/main/java/de/hpi/cc/datasource/decentralized/ethereum/smartcontracts/
 .gradle
