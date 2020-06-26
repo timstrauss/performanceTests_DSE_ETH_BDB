@@ -35,8 +35,8 @@ task runEthGenericTests(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 }
 
-task runDSETests(type: JavaExec) {
-    main = 'DSETest'
+task runDSEGenericTests(type: JavaExec) {
+    main = 'genericTests.GenericDSETest'
     classpath = sourceSets.main.runtimeClasspath
 }
 

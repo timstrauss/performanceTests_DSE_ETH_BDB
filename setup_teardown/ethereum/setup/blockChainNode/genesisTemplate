@@ -12,7 +12,7 @@
     "istanbulBlock": 0,
     "clique": {
       "period": 0,
-      "epoch": 3000000
+      "epoch": 3000
     }
   },
   "nonce": "0x0",
