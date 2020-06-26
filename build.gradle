@@ -40,6 +40,11 @@ task runDSEGenericTests(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+task runBDBGenericTests(type: JavaExec) {
+    main = 'genericTests.GenericBDBTest'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 task runDSESetup(type: JavaExec) {
     main = "SetupDSE"
     classpath = sourceSets.main.runtimeClasspath
