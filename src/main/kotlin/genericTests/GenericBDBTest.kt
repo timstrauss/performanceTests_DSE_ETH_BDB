@@ -9,6 +9,7 @@ import com.mongodb.client.model.Filters.and
 import genericTests.bigchaindb.BDBBoolTests
 import genericTests.bigchaindb.BDBIntTests
 import genericTests.bigchaindb.BDBStringTests
+import org.bson.Document
 
 fun main() {
     val mongoClient = MongoClient()
@@ -20,7 +21,7 @@ fun main() {
     println(assetId as String)
     val metadataId = transactionsCollection.find(BasicDBObject("asset", BasicDBObject("id", assetId))).sort(BasicDBObject("\$natural", -1)).first()?.getString("id")
     println(metadataId as String)
-    val metadataValue = metadataCollection.find(BasicDBObject("id", metadataId as String)).first()?.get("metadata")
+    val metadataValue = (metadataCollection.find(BasicDBObject("id", metadataId as String)).first()?.get("metadata") as Document).getString("value")
     println(metadataValue)
     /*BDBStringTests.run(2)
     BDBBoolTests.run(2)
