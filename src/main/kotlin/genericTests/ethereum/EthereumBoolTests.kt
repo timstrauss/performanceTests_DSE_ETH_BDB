@@ -4,21 +4,27 @@ import connectionDetails.EthereumConnectionDetails
 import connectionDetails.EthereumContractGasProvider
 import de.hpi.cc.datasource.decentralized.ethereum.smartcontracts.Generic
 import genericTests.TestThread
+import genericTests.TimeToRun
 import java.io.File
 
 object EthereumBoolTests {
     fun run(threads: Int) {
         val con = EthereumConnectionDetails("http://localhost:8545")
         val generic = Generic.deploy(con.web3j, con.credentials, EthereumContractGasProvider()).send()
-        val timePerTest = 20 * 1000 * 1000 * 1000L
+        val timePerTest = TimeToRun.get()
         val t = File("./benchmarks/ethereum").mkdirs()
 
         executeBoolTests(threads, timePerTest, generic)
     }
 
     private class SetBoolThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBool", "ethereum") {
-        override fun testFunc() {
-            generic.setBool(setValue as Boolean).send()
+        override fun testFunc(): Boolean {
+            return try {
+                generic.setBool(setValue as Boolean).send()
+                true
+            } catch (e: Exception) {
+                false
+            }
         }
 
         override fun preaction() {
@@ -27,8 +33,13 @@ object EthereumBoolTests {
     }
 
     private class GetBoolThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, false, "getBool", "ethereum") {
-        override fun testFunc() {
-            generic.bool.send()
+        override fun testFunc():Boolean {
+            return try {
+                generic.bool.send()
+                true
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 

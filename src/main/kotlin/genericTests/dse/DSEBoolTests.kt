@@ -3,6 +3,7 @@ package genericTests.dse
 import com.datastax.oss.driver.api.core.CqlSession
 import connectionDetails.CassandraConnectionDetails
 import genericTests.TestThread
+import genericTests.TimeToRun
 import java.io.File
 import java.util.*
 
@@ -12,7 +13,7 @@ object DSEBoolTests {
         con.openSession()
         val uuid = UUID.randomUUID().toString()
         con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
-        val timePerTest = 20 * 1000 * 1000 * 1000L
+        val timePerTest = TimeToRun.get()
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
@@ -20,8 +21,8 @@ object DSEBoolTests {
     }
 
     private class SetBoolThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setBool", "dse") {
-        override fun testFunc() {
-            session.execute("UPDATE tim_space.generics SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid'")
+        override fun testFunc(): Boolean {
+            return session.execute("UPDATE tim_space.generics SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid'").wasApplied()
         }
 
         override fun preaction() {
@@ -30,8 +31,13 @@ object DSEBoolTests {
     }
 
     private class GetBoolThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getBool", "dse") {
-        override fun testFunc() {
-            session.execute("SELECT boolvar FROM tim_space.generics WHERE uuid = '$uuid'").one()?.getBoolean(0)
+        override fun testFunc(): Boolean {
+            return try {
+                session.execute("SELECT boolvar FROM tim_space.generics WHERE uuid = '$uuid'").one()?.getBoolean(0)
+                true
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 

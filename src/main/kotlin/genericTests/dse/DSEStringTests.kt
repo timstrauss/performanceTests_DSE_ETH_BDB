@@ -3,6 +3,7 @@ package genericTests.dse
 import com.datastax.oss.driver.api.core.CqlSession
 import connectionDetails.CassandraConnectionDetails
 import genericTests.TestThread
+import genericTests.TimeToRun
 import java.io.File
 import java.util.*
 
@@ -12,7 +13,7 @@ object DSEStringTests {
         con.openSession()
         val uuid = UUID.randomUUID().toString()
         con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
-        val timePerTest = 20 * 1000 * 1000 * 1000L
+        val timePerTest = TimeToRun.get()
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
@@ -21,8 +22,8 @@ object DSEStringTests {
     }
 
     private class SetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString", "dse") {
-        override fun testFunc() {
-            session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid'")
+        override fun testFunc(): Boolean {
+            return session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid'").wasApplied()
         }
 
         override fun preaction() {
@@ -31,8 +32,13 @@ object DSEStringTests {
     }
 
     private class GetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getString", "dse") {
-        override fun testFunc() {
-            session.execute("SELECT stringvar FROM tim_space.generics WHERE uuid = '$uuid'").one()?.getString(0)
+        override fun testFunc(): Boolean {
+            return try {
+                session.execute("SELECT stringvar FROM tim_space.generics WHERE uuid = '$uuid'").one()?.getString(0)
+                true
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 

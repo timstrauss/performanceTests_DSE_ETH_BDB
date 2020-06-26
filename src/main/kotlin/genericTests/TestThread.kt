@@ -14,8 +14,9 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
             benchmarkFile.delete()
         }
         benchmarkFile.createNewFile()
-        thread(true) {
-            while (time > 0) {
+        var done = false
+        val t = thread(true) {
+            while (!done) {
                 benchmarkFile.appendText(setText("", true))
                 sleep(1000)
             }
@@ -24,24 +25,26 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
             preaction()
         }
         val transactionStartFirst: Long = System.nanoTime()
-        testFunc()
+        val successFirst = testFunc()
         val transactionEndFirst: Long = System.nanoTime()
-        setText("${(transactionEndFirst - transactionStartFirst) / 1000}|$threadNum", false)
+        setText("${(transactionEndFirst - transactionStartFirst) / 1000}|$threadNum|${successFirst.toInt()}", false)
         time -= ((transactionEndFirst - transactionStartFirst) / 1000000).toInt()
         while(0 < time) {
             if (setTest) {
                 preaction()
             }
             val transactionStart: Long = System.nanoTime()
-            testFunc()
+            val success = testFunc()
             val transactionEnd: Long = System.nanoTime()
-            setText("\n${(transactionEnd - transactionStart) / 1000}|$threadNum", false)
+            setText("\n${(transactionEnd - transactionStart) / 1000}|$threadNum|${success.toInt()}", false)
             time -= (transactionEnd - transactionStart)
         }
+        done = true
+        t.join()
     }
 
-    open fun testFunc() {
-
+    open fun testFunc(): Boolean {
+        return true
     }
 
     open fun preaction() {
@@ -58,4 +61,6 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
         }
         return returnVal
     }
+
+    fun Boolean.toInt() = if (this) 1 else 0
 }
