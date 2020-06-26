@@ -3,14 +3,14 @@ package genericTests
 import java.io.File
 
 fun main() {
-    var benchmarkEthFile = File("./benchmarks/ethereum/setBool.txt")
+    var benchmarkEthFile = File("./benchmarks/ethereum/setBool2.txt")
     var benchmarkEth = benchmarkEthFile.readText().lines()
     var timesEth = LongArray(benchmarkEth.size) { it -> benchmarkEth[it].split("|")[0].toLong()}
     timesEth.sort()
 
-    var benchmarkDseFile = File("./benchmarks/dse/setBool.txt")
+    var benchmarkDseFile = File("./benchmarks/dse/setBool2.txt")
     var benchmarkDse = benchmarkDseFile.readText().lines()
-    var timesDse = LongArray(benchmarkDse.size) {it -> benchmarkDse[it].toLong()}
+    var timesDse = LongArray(benchmarkDse.size) {it -> benchmarkDse[it].split("|")[0].toLong()}
     timesDse.sort()
 
     println("SET BOOLEAN")
@@ -32,14 +32,14 @@ fun main() {
     println("100\t\t\t\t\t\t${timesEth[timesEth.size - 1]}\t\t\t\t\t${timesDse[timesDse.size - 1]}")
     println("\n\n")
 
-    benchmarkEthFile = File("./benchmarks/ethereum/getBool.txt")
+    benchmarkEthFile = File("./benchmarks/ethereum/getBool2.txt")
     benchmarkEth = benchmarkEthFile.readText().lines()
     timesEth = LongArray(benchmarkEth.size) { it -> benchmarkEth[it].split("|")[0].toLong()}
     timesEth.sort()
 
-    benchmarkDseFile = File("./benchmarks/dse/getBool.txt")
+    benchmarkDseFile = File("./benchmarks/dse/getBool2.txt")
     benchmarkDse = benchmarkDseFile.readText().lines()
-    timesDse = LongArray(benchmarkDse.size) {it -> benchmarkDse[it].toLong()}
+    timesDse = LongArray(benchmarkDse.size) {it -> benchmarkDse[it].split("|")[0].toLong()}
     timesDse.sort()
 
     println("GET BOOLEAN")
