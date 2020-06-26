@@ -2,7 +2,7 @@ package genericTests
 
 import java.io.File
 
-open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Int, val setTest: Boolean, val fileName: String, folder: String) : Thread() {
+open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Int, val setTest: Boolean, val fileName: String, val folder: String) : Thread() {
     var setValue: Any = 1
 
     override fun run() {
