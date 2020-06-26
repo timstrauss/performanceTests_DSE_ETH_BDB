@@ -10,13 +10,13 @@ object EthereumBoolTests {
     fun run(threads: Int) {
         val con = EthereumConnectionDetails("http://localhost:8545")
         val generic = Generic.deploy(con.web3j, con.credentials, EthereumContractGasProvider()).send()
-        val timePerTest = 10 * 60 * 1000
+        val timePerTest = 20 * 1000 * 1000 * 1000L
         val t = File("./benchmarks/ethereum").mkdirs()
 
         executeBoolTests(threads, timePerTest, generic)
     }
 
-    private class SetBoolThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBool", "ethereum") {
+    private class SetBoolThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBool", "ethereum") {
         override fun testFunc() {
             generic.setBool(setValue as Boolean).send()
         }
@@ -26,13 +26,13 @@ object EthereumBoolTests {
         }
     }
 
-    private class GetBoolThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getBool", "ethereum") {
+    private class GetBoolThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, false, "getBool", "ethereum") {
         override fun testFunc() {
             generic.bool.send()
         }
     }
 
-    private fun executeBoolTests(workerThreads: Int, time: Int, generic: Generic) {
+    private fun executeBoolTests(workerThreads: Int, time: Long, generic: Generic) {
         val generics = Array<Generic>(workerThreads) {
             val con = EthereumConnectionDetails("http://localhost:8545")
             Generic.load(generic.contractAddress, con.web3j, con.credentials, EthereumContractGasProvider())

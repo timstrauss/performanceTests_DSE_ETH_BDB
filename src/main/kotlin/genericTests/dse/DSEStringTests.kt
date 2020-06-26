@@ -12,14 +12,15 @@ object DSEStringTests {
         con.openSession()
         val uuid = UUID.randomUUID().toString()
         con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
-        val timePerTest = 20 * 1000
+        val timePerTest = 20 * 1000 * 1000 * 1000L
         val t = File("./benchmarks/dse").mkdirs()
-
-        executeBoolTests(threads, timePerTest, con.session(), uuid)
+        Thread.sleep(1000)
         con.closeSession()
+
+        executeStringTests(threads, timePerTest, uuid)
     }
 
-    private class SetStringThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString", "dse") {
+    private class SetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString", "dse") {
         override fun testFunc() {
             session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid'")
         }
@@ -29,15 +30,20 @@ object DSEStringTests {
         }
     }
 
-    private class GetStringThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getString", "dse") {
+    private class GetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getString", "dse") {
         override fun testFunc() {
-            session.execute("SELECT stringvar FROM tim_space.generics WHERE uuid = '$uuid").one()?.getString(0)
+            session.execute("SELECT stringvar FROM tim_space.generics WHERE uuid = '$uuid'").one()?.getString(0)
         }
     }
 
-    private fun executeBoolTests(workerThreads: Int, time: Int, session: CqlSession, uuid: String) {
+    private fun executeStringTests(workerThreads: Int, time: Long, uuid: String) {
+        val sessions = Array(workerThreads) {
+            val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
+            con.openSession()
+            con.session()
+        }
         val setThreads = Array(workerThreads) {
-            val thread = SetStringThread(time, session, it, workerThreads, uuid)
+            val thread = SetStringThread(time, sessions[it], it, workerThreads, uuid)
             thread.start()
             thread
         }
@@ -60,7 +66,7 @@ object DSEStringTests {
 
 
         val getThreads = Array(workerThreads) {
-            val thread = GetStringThread(time, session, it, workerThreads, uuid)
+            val thread = GetStringThread(time, sessions[it], it, workerThreads, uuid)
             thread.start()
             thread
         }
@@ -79,6 +85,10 @@ object DSEStringTests {
             val file = File("./benchmarks/dse/getString${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
+        }
+
+        for (session in sessions) {
+            session.close()
         }
     }
 }

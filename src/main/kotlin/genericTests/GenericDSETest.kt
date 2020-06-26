@@ -15,6 +15,8 @@ fun main() {
 
     con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.generics (uuid text PRIMARY KEY, boolvar boolean, intvar int, stringvar text);")
 
+    Thread.sleep(1000)
+
     con.closeSession()
 
     DSEBoolTests.run(2)

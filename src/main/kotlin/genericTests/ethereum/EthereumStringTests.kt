@@ -10,13 +10,13 @@ object EthereumStringTests {
     fun run(threads: Int) {
         val con = EthereumConnectionDetails("http://localhost:8545")
         val generic = Generic.deploy(con.web3j, con.credentials, EthereumContractGasProvider()).send()
-        val timePerTest = 10 * 60 * 1000
+        val timePerTest = 20 * 1000 * 1000 * 1000L
         val t = File("./benchmarks/ethereum").mkdirs()
 
         executeStringTests(threads, timePerTest, generic)
     }
 
-    private class SetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setString", "ethereum") {
+    private class SetThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setString", "ethereum") {
         override fun testFunc() {
             generic.setString(setValue as String).send()
         }
@@ -26,13 +26,13 @@ object EthereumStringTests {
         }
     }
 
-    private class GetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getString", "ethereum") {
+    private class GetThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, false, "getString", "ethereum") {
         override fun testFunc() {
             generic.string.send()
         }
     }
 
-    private fun executeStringTests(workerThreads: Int, time: Int, generic: Generic) {
+    private fun executeStringTests(workerThreads: Int, time: Long, generic: Generic) {
         val generics = Array<Generic>(workerThreads) {
             val con = EthereumConnectionDetails("http://localhost:8545")
             Generic.load(generic.contractAddress, con.web3j, con.credentials, EthereumContractGasProvider())
