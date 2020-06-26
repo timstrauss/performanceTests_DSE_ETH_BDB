@@ -2,12 +2,12 @@ package genericTests
 
 import java.io.File
 
-open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Int, val setTest: Boolean, val fileName: String) : Thread() {
+open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Int, val setTest: Boolean, val fileName: String, folder: String) : Thread() {
     var setValue: Any = 1
 
     override fun run() {
         var first = true
-        var benchmarkFile = File("./benchmarks/ethereum/$fileName${workerThreads}T$threadNum.txt")
+        var benchmarkFile = File("./benchmarks/$folder/$fileName${workerThreads}T$threadNum.txt")
         if (benchmarkFile.exists()) {
             benchmarkFile.delete()
         }

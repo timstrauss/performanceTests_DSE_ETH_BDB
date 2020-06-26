@@ -17,7 +17,7 @@ object EthereumIntTests {
         executeIntTests(threads, timePerTest, generic)
     }
 
-    private class SetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setInt") {
+    private class SetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setInt", "ethereum") {
         override fun testFunc() {
             generic.setInt(setValue as BigInteger).send()
         }
@@ -27,7 +27,7 @@ object EthereumIntTests {
         }
     }
 
-    private class GetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getInt") {
+    private class GetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getInt", "ethereum") {
         override fun testFunc() {
             generic.int.send()
         }

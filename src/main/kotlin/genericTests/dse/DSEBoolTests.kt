@@ -19,7 +19,7 @@ object DSEBoolTests {
         con.closeSession()
     }
 
-    private class SetBoolThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setBool") {
+    private class SetBoolThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setBool", "dse") {
         override fun testFunc() {
             session.execute("UPDATE tim_space.generics SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid'")
         }
@@ -29,7 +29,7 @@ object DSEBoolTests {
         }
     }
 
-    private class GetBoolThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getBool") {
+    private class GetBoolThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getBool", "dse") {
         override fun testFunc() {
             session.execute("SELECT boolvar FROM tim_space.generics WHERE uuid = '$uuid").one()?.getBoolean(0)
         }

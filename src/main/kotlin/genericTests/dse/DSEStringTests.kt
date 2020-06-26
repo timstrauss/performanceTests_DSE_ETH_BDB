@@ -19,7 +19,7 @@ object DSEStringTests {
         con.closeSession()
     }
 
-    private class SetStringThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString") {
+    private class SetStringThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString", "dse") {
         override fun testFunc() {
             session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid'")
         }
@@ -29,7 +29,7 @@ object DSEStringTests {
         }
     }
 
-    private class GetStringThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getString") {
+    private class GetStringThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getString", "dse") {
         override fun testFunc() {
             session.execute("SELECT stringvar FROM tim_space.generics WHERE uuid = '$uuid").one()?.getString(0)
         }

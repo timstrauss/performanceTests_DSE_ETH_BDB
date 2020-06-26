@@ -19,7 +19,7 @@ object DSEIntTests {
         con.closeSession()
     }
 
-    private class SetIntThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setInt") {
+    private class SetIntThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setInt", "dse") {
         override fun testFunc() {
             session.execute("UPDATE tim_space.generics SET intvar = ${this.setValue as Int} WHERE uuid = '$uuid'")
         }
@@ -29,7 +29,7 @@ object DSEIntTests {
         }
     }
 
-    private class GetIntThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getInt") {
+    private class GetIntThread(time: Int, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "getInt", "dse") {
         override fun testFunc() {
             session.execute("SELECT intvar FROM tim_space.generics WHERE uuid = '$uuid").one()?.getInt(0)
         }

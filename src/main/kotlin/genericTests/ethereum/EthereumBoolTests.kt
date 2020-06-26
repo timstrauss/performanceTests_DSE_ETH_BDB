@@ -16,7 +16,7 @@ object EthereumBoolTests {
         executeBoolTests(threads, timePerTest, generic)
     }
 
-    private class SetBoolThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBool") {
+    private class SetBoolThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBool", "ethereum") {
         override fun testFunc() {
             generic.setBool(setValue as Boolean).send()
         }
@@ -26,7 +26,7 @@ object EthereumBoolTests {
         }
     }
 
-    private class GetBoolThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getBool") {
+    private class GetBoolThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getBool", "ethereum") {
         override fun testFunc() {
             generic.bool.send()
         }

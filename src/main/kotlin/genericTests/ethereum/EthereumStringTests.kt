@@ -5,7 +5,6 @@ import connectionDetails.EthereumContractGasProvider
 import de.hpi.cc.datasource.decentralized.ethereum.smartcontracts.Generic
 import genericTests.TestThread
 import java.io.File
-import java.math.BigInteger
 
 object EthereumStringTests {
     fun run(threads: Int) {
@@ -17,7 +16,7 @@ object EthereumStringTests {
         executeStringTests(threads, timePerTest, generic)
     }
 
-    private class SetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setString") {
+    private class SetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setString", "ethereum") {
         override fun testFunc() {
             generic.setString(setValue as String).send()
         }
@@ -27,7 +26,7 @@ object EthereumStringTests {
         }
     }
 
-    private class GetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getString") {
+    private class GetThread(time: Int, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "getString", "ethereum") {
         override fun testFunc() {
             generic.string.send()
         }
