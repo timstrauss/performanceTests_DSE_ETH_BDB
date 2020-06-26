@@ -13,7 +13,7 @@ fun main() {
     val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
     con.openSession()
 
-    con.session().execute("CREATE TABLE tim_space.generics (uuid text PRIMARY KEY, boolvar boolean, intvar int, stringvar text);")
+    con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.generics (uuid text PRIMARY KEY, boolvar boolean, intvar int, stringvar text);")
 
     con.closeSession()
 
