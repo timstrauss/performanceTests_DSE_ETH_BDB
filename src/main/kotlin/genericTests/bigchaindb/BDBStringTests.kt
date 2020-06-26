@@ -8,6 +8,8 @@ import com.bigchaindb.model.FulFill
 import com.bigchaindb.model.GenericCallback
 import com.bigchaindb.model.MetaData
 import com.google.gson.internal.LinkedTreeMap
+import com.mongodb.MongoClient
+import com.mongodb.MongoClientURI
 import connectionDetails.BigchainDBConnectionDetails
 import genericTests.TestThread
 import genericTests.TimeToRun
@@ -48,7 +50,12 @@ object BDBStringTests {
         var success: Boolean? = null
 
         override fun testFunc(): Boolean {
-            success = null
+            val mongoClient = MongoClient(MongoClientURI("mongodb://172.20.8.222:27017"))
+            val db = mongoClient.getDatabase("bigchain")
+            val assetCollection = db.getCollection("assets")
+            val transactionsCollection = db.getCollection("transactions")
+            val metadataCollection = db.getCollection("metadata")
+
             val assetId = AssetsApi.getAssetsWithLimit(uuid + " stringvar", "1").assets[0].id
             val latestMetaData: LinkedTreeMap<String, String>
             var latestMetaDataId: String
