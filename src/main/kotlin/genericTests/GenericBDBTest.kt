@@ -16,8 +16,9 @@ fun main() {
     val assetCollection = db.getCollection("assets")
     val transactionsCollection = db.getCollection("transactions")
     val metadataCollection = db.getCollection("metadata")
-    val assetId = assetCollection.find(and(BasicDBObject("data", BasicDBObject("property", "stringvar")), BasicDBObject("data", BasicDBObject("uuid", "bff17042-77a4-4e9f-8620-9e0535d6a8ea")))).first().get("id")
+    val assetId = assetCollection.find(and(BasicDBObject("data", BasicDBObject("property", "boolvar")), BasicDBObject("data", BasicDBObject("uuid", "bff17042-77a4-4e9f-8620-9e0535d6a8ea")))).first()?.get("id")
     println(assetId as String)
+    val metadataId = transactionsCollection.find(BasicDBObject("asset", BasicDBObject("id", assetId))).sort(BasicDBObject("\$natural", "-1")).first()?.get("id")
     /*BDBStringTests.run(2)
     BDBBoolTests.run(2)
     BDBIntTests.run(2)*/

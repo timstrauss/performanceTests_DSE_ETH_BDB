@@ -8,8 +8,10 @@ import com.bigchaindb.model.FulFill
 import com.bigchaindb.model.GenericCallback
 import com.bigchaindb.model.MetaData
 import com.google.gson.internal.LinkedTreeMap
+import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
 import com.mongodb.MongoClientURI
+import com.mongodb.client.model.Filters
 import connectionDetails.BigchainDBConnectionDetails
 import genericTests.TestThread
 import genericTests.TimeToRun
@@ -55,8 +57,15 @@ object BDBStringTests {
             val assetCollection = db.getCollection("assets")
             val transactionsCollection = db.getCollection("transactions")
             val metadataCollection = db.getCollection("metadata")
-
-            val assetId = AssetsApi.getAssetsWithLimit(uuid + " stringvar", "1").assets[0].id
+            val assetId = assetCollection.find(
+                Filters.and(
+                    BasicDBObject("data", BasicDBObject("property", "stringvar")),
+                    BasicDBObject("data", BasicDBObject("uuid", uuid))
+                )
+            ).first()?.get("id")
+            if (assetId == null || assetId !is String) {
+                return false
+            }
             val latestMetaData: LinkedTreeMap<String, String>
             var latestMetaDataId: String
             val transfers = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions
