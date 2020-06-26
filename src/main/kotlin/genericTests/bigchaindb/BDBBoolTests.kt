@@ -95,7 +95,7 @@ object BDBBoolTests {
 
     private class GetBoolThread(time: Long, threadNum: Int, workerThreads: Int, val uuid: String, val con: BigchainDBConnectionDetails): TestThread(workerThreads, threadNum, time, false, "getBool", "bdb") {
         override fun testFunc(): Boolean {
-            val assetId = AssetsApi.getAssetsWithLimit(uuid, "1").assets[0].id
+            val assetId = AssetsApi.getAssetsWithLimit(uuid + " boolvar", "1").assets[0].id
             val latestVal = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions.last().metaData
             return true
         }
