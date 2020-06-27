@@ -12,7 +12,7 @@ import com.mongodb.MongoClient
 import com.mongodb.client.model.Filters
 import connectionDetails.BigchainDBConnectionDetails
 import genericTests.TestThread
-import genericTests.TimeToRun
+import genericTests.TestInfo
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import okhttp3.Response
@@ -25,9 +25,9 @@ object BDBBoolMappingTests {
     val gson = Gson()
 
     fun run(threads: Int) {
-        val con = BigchainDBConnectionDetails("http://127.0.0.1:9984")
+        val con = BigchainDBConnectionDetails("http://${TestInfo.nodeHost}:9984")
         val uuid = UUID.randomUUID().toString()
-        val timePerTest = TimeToRun.get()
+        val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/bdb").mkdirs()
         var assetData = TreeMap<String, String>()
         assetData["uuid"] = uuid

@@ -3,19 +3,19 @@ package genericTests.dse
 import com.datastax.oss.driver.api.core.CqlSession
 import connectionDetails.CassandraConnectionDetails
 import genericTests.TestThread
-import genericTests.TimeToRun
+import genericTests.TestInfo
 import java.io.File
 import java.util.*
 
 object DSEIntTests {
     fun run(threads: Int) {
-        val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
+        val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
         con.openSession()
         val uuid = UUID.randomUUID().toString()
         con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
         con.session().execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
         resetArrayTable(con.session(), uuid)
-        val timePerTest = TimeToRun.get()
+        val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
@@ -55,7 +55,7 @@ object DSEIntTests {
 
     private fun executeIntTests(workerThreads: Int, time: Long, uuid: String) {
         val sessions = Array(workerThreads) {
-            val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
+            val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
             con.openSession()
             con.session()
         }

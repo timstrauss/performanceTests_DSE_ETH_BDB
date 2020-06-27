@@ -4,15 +4,15 @@ import connectionDetails.EthereumConnectionDetails
 import connectionDetails.EthereumContractGasProvider
 import de.hpi.cc.datasource.decentralized.ethereum.smartcontracts.Generic
 import genericTests.TestThread
-import genericTests.TimeToRun
+import genericTests.TestInfo
 import java.io.File
 import java.math.BigInteger
 
 object EthereumArrayTests {
     fun run(threads: Int) {
-        val con = EthereumConnectionDetails("http://localhost:8545")
+        val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
         val generic = Generic.deploy(con.web3j, con.credentials, EthereumContractGasProvider()).send()
-        val timePerTest = TimeToRun.get()
+        val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/ethereum").mkdirs()
 
         executeTests(threads, timePerTest, generic)
@@ -67,7 +67,7 @@ object EthereumArrayTests {
 
     private fun executeTests(workerThreads: Int, time: Long, generic: Generic) {
         val generics = Array<Generic>(workerThreads) {
-            val con = EthereumConnectionDetails("http://localhost:8545")
+            val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
             Generic.load(generic.contractAddress, con.web3j, con.credentials, EthereumContractGasProvider())
         }
         val setThreads = Array(workerThreads) {

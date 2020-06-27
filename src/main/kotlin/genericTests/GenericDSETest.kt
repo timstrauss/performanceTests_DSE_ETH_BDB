@@ -8,7 +8,7 @@ import genericTests.dse.*
 
 fun main() {
     CassandraUtils.createNewUser("tim", "abc", 2)
-    val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
+    val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
     con.openSession()
 
     con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.generics (uuid text PRIMARY KEY, boolvar boolean, intvar int, stringvar text);")
