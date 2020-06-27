@@ -1,5 +1,6 @@
 package genericTests.bigchaindb
 
+import com.bigchaindb.api.TransactionsApi
 import com.bigchaindb.builders.BigchainDbTransactionBuilder
 import com.bigchaindb.constants.Operations
 import com.bigchaindb.model.FulFill
@@ -18,8 +19,9 @@ import okhttp3.Response
 import org.bson.Document
 import java.io.File
 import java.util.*
+import kotlin.collections.HashMap
 
-object BDBStringTests {
+object BDBBoolMappingTests {
     val gson = Gson()
 
     fun run(threads: Int) {
@@ -60,14 +62,14 @@ object BDBStringTests {
         executeTests(threads, timePerTest, uuid, con)
     }
 
-    private class SetStringThread(
+    private class SetThread(
         time: Long,
         threadNum: Int,
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
         val mongoClient: MongoClient = MongoClient()
-    ) : TestThread(workerThreads, threadNum, time, true, "setString", "bdb") {
+    ) : TestThread(workerThreads, threadNum, time, true, "setBoolMapping", "bdb") {
         var success: Boolean? = null
 
         override fun testFunc(): Boolean {
@@ -78,7 +80,7 @@ object BDBStringTests {
             val metadataCollection = db.getCollection("metadata")
             val assetId = assetCollection.find(
                 Filters.and(
-                    BasicDBObject("data", BasicDBObject("property", "stringvar")),
+                    BasicDBObject("data", BasicDBObject("property", "booolmappingvar")),
                     BasicDBObject("data", BasicDBObject("uuid", uuid))
                 )
             ).first()?.getString("id") ?: return false
@@ -88,21 +90,23 @@ object BDBStringTests {
                     BasicDBObject("id", assetId)
                 )
             ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
-            val metadataValue = (metadataCollection.find(
+            val metadataValue = gson.fromJson((metadataCollection.find(
                 BasicDBObject(
                     "id",
                     metadataId
                 )
-            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
-            if (metadataValue == setValue as String) {
+            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false, HashMap::class.java) as HashMap<String, Boolean>
+            if (metadataValue["test2"] == setValue as Boolean) {
                 return true
             }
+            metadataValue["test2"] = true
             val fulFill = FulFill()
             fulFill.outputIndex = 0
             fulFill.transactionId = metadataId
+            val previousSize = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions.size
             val tt: String? = null
             val metadata = MetaData()
-            metadata.setMetaData("value", (setValue as String))
+            metadata.setMetaData("value", gson.toJson(metadataValue))
             BigchainDbTransactionBuilder
                 .init()
                 .addMetaData(metadata)
@@ -111,7 +115,7 @@ object BDBStringTests {
                 .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                 .operation(Operations.TRANSFER)
                 .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                .sendTransaction(CallBackBDB() {
+                .sendTransaction(BDBBoolTests.CallBackBDB() {
                     success = it
                 })
             while (success == null) {
@@ -121,18 +125,18 @@ object BDBStringTests {
         }
 
         override fun preaction() {
-            setValue = "abcsd" + (System.currentTimeMillis() % 2000)
+            setValue = (System.currentTimeMillis() % 2) == 0L
         }
     }
 
-    private class GetStringThread(
+    private class GetThread(
         time: Long,
         threadNum: Int,
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
         val mongoClient: MongoClient = MongoClient()
-    ) : TestThread(workerThreads, threadNum, time, false, "getString", "bdb") {
+    ) : TestThread(workerThreads, threadNum, time, false, "getBoolMapping", "bdb") {
         override fun testFunc(): Boolean {
             val db = mongoClient.getDatabase("bigchain")
             val assetCollection = db.getCollection("assets")
@@ -140,7 +144,7 @@ object BDBStringTests {
             val metadataCollection = db.getCollection("metadata")
             val assetId = assetCollection.find(
                 Filters.and(
-                    BasicDBObject("data", BasicDBObject("property", "stringvar")),
+                    BasicDBObject("data", BasicDBObject("property", "booolmappingvar")),
                     BasicDBObject("data", BasicDBObject("uuid", uuid))
                 )
             ).first()?.getString("id") ?: return false
@@ -156,20 +160,20 @@ object BDBStringTests {
                     metadataId
                 )
             ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
-            return true
+            return gson.fromJson(metadataValue, HashMap::class.java)["test"] == true
         }
     }
 
     private fun executeTests(workerThreads: Int, time: Long, uuid: String, con: BigchainDBConnectionDetails) {
         val setThreads = Array(workerThreads) {
-            val thread = SetStringThread(time, it, workerThreads, uuid, con)
+            val thread = SetThread(time, it, workerThreads, uuid, con)
             thread.start()
             thread
         }
         for (thread in setThreads) {
             thread.join()
         }
-        var benchmarkFile = File("./benchmarks/bdb/setString${workerThreads}.txt")
+        var benchmarkFile = File("./benchmarks/bdb/setBoolMapping${workerThreads}.txt")
         if (benchmarkFile.exists()) {
             benchmarkFile.delete()
         }
@@ -178,20 +182,20 @@ object BDBStringTests {
             if (index > 0) {
                 benchmarkFile.appendText("\n")
             }
-            val file = File("./benchmarks/bdb/setString${workerThreads}T$index.txt")
+            val file = File("./benchmarks/bdb/setBoolMapping${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
         }
 
         val getThreads = Array(workerThreads) {
-            val thread = GetStringThread(time, it, workerThreads, uuid, con)
+            val thread = GetThread(time, it, workerThreads, uuid, con)
             thread.start()
             thread
         }
         for (thread in getThreads) {
             thread.join()
         }
-        benchmarkFile = File("./benchmarks/bdb/getString${workerThreads}.txt")
+        benchmarkFile = File("./benchmarks/bdb/getBoolMapping${workerThreads}.txt")
         if (benchmarkFile.exists()) {
             benchmarkFile.delete()
         }
@@ -200,7 +204,7 @@ object BDBStringTests {
             if (index > 0) {
                 benchmarkFile.appendText("\n")
             }
-            val file = File("./benchmarks/bdb/getString${workerThreads}T$index.txt")
+            val file = File("./benchmarks/bdb/getBoolMapping${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
         }

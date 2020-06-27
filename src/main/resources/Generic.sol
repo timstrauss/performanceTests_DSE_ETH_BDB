@@ -8,9 +8,12 @@ contract Generic {
     bool boolVar;
 
     int[] intArray;
-    bool[] boolArray;
 
-    constructor() public {}
+    mapping(string => bool) boolMapping;
+
+    constructor() public {
+        boolMapping["test"] = true;
+    }
 
     function getString() public view returns (string memory) {
         return stringVar;
@@ -40,10 +43,6 @@ contract Generic {
         intArray.push(newVar);
     }
 
-    function addBool(bool newVar) public {
-        boolArray.push(newVar);
-    }
-
     function removeInt(int removeVar) public {
         for(uint i = 0; i < intArray.length; i++) {
             if (removeVar == intArray[i]) {
@@ -53,20 +52,19 @@ contract Generic {
         }
     }
 
-    function removeBool(bool removeVar) public {
-        for(uint i = 0; i < boolArray.length; i++) {
-            if (removeVar == boolArray[i]) {
-                boolArray[i] = boolArray[boolArray.length - 1];
-                delete boolArray[boolArray.length - 1];
-            }
-        }
+    function setInts(int[] memory newInt) public {
+        intArray = newInt;
     }
 
     function getInts() public view returns (int[] memory) {
         return intArray;
     }
 
-    function getBools() public view returns (bool[] memory) {
-        return boolArray;
+    function getBoolFor(string memory id) public view returns (bool) {
+        return boolMapping[id];
+    }
+
+    function setBoolFor(string memory id, bool value) public {
+        boolMapping[id] = value;
     }
 }

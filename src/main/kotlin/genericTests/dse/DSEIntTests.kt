@@ -13,12 +13,23 @@ object DSEIntTests {
         con.openSession()
         val uuid = UUID.randomUUID().toString()
         con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
+        con.session().execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
+        resetArrayTable(con.session(), uuid)
         val timePerTest = TimeToRun.get()
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
-
         executeIntTests(threads, timePerTest, uuid)
+    }
+
+    private fun resetArrayTable(session: CqlSession, uuid: String) {
+        session.execute("TRUNCATE tim_space.genericsArray;")
+        var batch = "BEGIN BATCH\n"
+        for (i in 0 until 221) {
+            batch += "INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', $i);\n"
+        }
+        batch += "APPLY BATCH;"
+        session.execute(batch)
     }
 
     private class SetIntThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setInt", "dse") {

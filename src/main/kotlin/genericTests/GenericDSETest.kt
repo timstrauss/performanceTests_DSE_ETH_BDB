@@ -4,9 +4,7 @@ package genericTests
 
 import connectionDetails.CassandraConnectionDetails
 import connectionDetails.CassandraUtils
-import genericTests.dse.DSEBoolTests
-import genericTests.dse.DSEIntTests
-import genericTests.dse.DSEStringTests
+import genericTests.dse.*
 
 fun main() {
     CassandraUtils.createNewUser("tim", "abc", 2)
@@ -14,12 +12,21 @@ fun main() {
     con.openSession()
 
     con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.generics (uuid text PRIMARY KEY, boolvar boolean, intvar int, stringvar text);")
+    con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.genericsMapping (uuid text, stringvar text, boolvar boolean, PRIMARY KEY(uuid, stringvar));")
+    con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.genericsArray (id UUID PRIMARY KEY, uuid text, intvar int);")
 
     Thread.sleep(1000)
 
     con.closeSession()
 
     DSEBoolTests.run(2)
+    println("bool done")
     DSEIntTests.run(2)
+    println("int done")
     DSEStringTests.run(2)
+    println("string done")
+    DSEBoolMappingTests.run(2)
+    println("mapping done")
+    DSEArrayTests.run(2)
+    println("array done")
 }

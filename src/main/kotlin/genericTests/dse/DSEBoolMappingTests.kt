@@ -7,7 +7,7 @@ import genericTests.TimeToRun
 import java.io.File
 import java.util.*
 
-object DSEStringTests {
+object DSEBoolMappingTests {
     fun run(threads: Int) {
         val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
         con.openSession()
@@ -19,8 +19,7 @@ object DSEStringTests {
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
-
-        executeStringTests(threads, timePerTest, uuid)
+        executeTests(threads, timePerTest, uuid)
     }
 
     private fun resetArrayTable(session: CqlSession, uuid: String) {
@@ -33,42 +32,46 @@ object DSEStringTests {
         session.execute(batch)
     }
 
-    private class SetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString", "dse") {
+    private class SetThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setBoolMapping", "dse") {
         override fun testFunc(): Boolean {
-            return session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid'").wasApplied()
+            val exists = session.execute("SELECT COUNT(*) as num FROM tim_space.genericsMapping WHERE uuid = '$uuid' AND stringvar = 'test2'").one()?.getLong(0) ?: return false
+            return if (exists == 0L) {
+                session.execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', ${setValue as Boolean}, 'test2');").wasApplied()
+            } else {
+                session.execute("UPDATE tim_space.genericsMapping SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid' AND stringvar = 'test2'").wasApplied()
+            }
         }
 
         override fun preaction() {
-            setValue = "abcsd" + (System.currentTimeMillis() % 2000)
+            setValue = (System.currentTimeMillis() % 2) == 0L
         }
     }
 
-    private class GetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getString", "dse") {
+    private class GetThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getBoolMapping", "dse") {
         override fun testFunc(): Boolean {
             return try {
-                session.execute("SELECT stringvar FROM tim_space.generics WHERE uuid = '$uuid'").one()?.getString(0)
-                true
+                session.execute("SELECT boolvar FROM tim_space.genericsMapping WHERE uuid = '$uuid' AND stringvar = 'test'").one()?.getBoolean(0) ?: false
             } catch (e: Exception) {
                 false
             }
         }
     }
 
-    private fun executeStringTests(workerThreads: Int, time: Long, uuid: String) {
+    private fun executeTests(workerThreads: Int, time: Long, uuid: String) {
         val sessions = Array(workerThreads) {
             val con = CassandraConnectionDetails("localhost", 9042, "tim", "abc")
             con.openSession()
             con.session()
         }
         val setThreads = Array(workerThreads) {
-            val thread = SetStringThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = SetThread(time, sessions[it], it, workerThreads, uuid)
             thread.start()
             thread
         }
         for (thread in setThreads) {
             thread.join()
         }
-        var benchmarkFile = File("./benchmarks/dse/setString${workerThreads}.txt")
+        var benchmarkFile = File("./benchmarks/dse/setBoolMapping${workerThreads}.txt")
         if (benchmarkFile.exists()) {
             benchmarkFile.delete()
         }
@@ -77,21 +80,20 @@ object DSEStringTests {
             if (index > 0) {
                 benchmarkFile.appendText("\n")
             }
-            val file = File("./benchmarks/dse/setString${workerThreads}T$index.txt")
+            val file = File("./benchmarks/dse/setBoolMapping${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
         }
 
-
         val getThreads = Array(workerThreads) {
-            val thread = GetStringThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = GetThread(time, sessions[it], it, workerThreads, uuid)
             thread.start()
             thread
         }
         for (thread in getThreads) {
             thread.join()
         }
-        benchmarkFile = File("./benchmarks/dse/getString${workerThreads}.txt")
+        benchmarkFile = File("./benchmarks/dse/getBoolMapping${workerThreads}.txt")
         if (benchmarkFile.exists()) {
             benchmarkFile.delete()
         }
@@ -100,7 +102,7 @@ object DSEStringTests {
             if (index > 0) {
                 benchmarkFile.appendText("\n")
             }
-            val file = File("./benchmarks/dse/getString${workerThreads}T$index.txt")
+            val file = File("./benchmarks/dse/getBoolMapping${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
         }

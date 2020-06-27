@@ -6,6 +6,7 @@ import com.bigchaindb.constants.Operations
 import com.bigchaindb.model.FulFill
 import com.bigchaindb.model.GenericCallback
 import com.bigchaindb.model.MetaData
+import com.google.gson.Gson
 import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
 import com.mongodb.client.model.Filters
@@ -20,6 +21,8 @@ import java.io.File
 import java.util.*
 
 object BDBBoolTests {
+    val gson = Gson()
+
     fun run(threads: Int) {
         val con = BigchainDBConnectionDetails("http://127.0.0.1:9984")
         val uuid = UUID.randomUUID().toString()
@@ -42,6 +45,18 @@ object BDBBoolTests {
         assetData["property"] = "boolvar"
         metadata = MetaData()
         metadata.setMetaData("value", "true")
+        con.sendCreateTransaction(assetData, metadata)
+        assetData = TreeMap<String, String>()
+        assetData["uuid"] = uuid
+        assetData["property"] = "arrayvar"
+        metadata = MetaData()
+        metadata.setMetaData("value", gson.toJson(IntArray(0)))
+        con.sendCreateTransaction(assetData, metadata)
+        assetData = TreeMap<String, String>()
+        assetData["uuid"] = uuid
+        assetData["property"] = "booolmappingvar"
+        metadata = MetaData()
+        metadata.setMetaData("value", gson.toJson(HashMap<String, Boolean>(mutableMapOf(Pair("test", true)))))
         con.sendCreateTransaction(assetData, metadata)
         executeTests(threads, timePerTest, uuid, con)
     }
@@ -73,7 +88,7 @@ object BDBBoolTests {
                     "asset",
                     BasicDBObject("id", assetId)
                 )
-            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
             val metadataValue = (metadataCollection.find(
                 BasicDBObject(
                     "id",
@@ -148,7 +163,6 @@ object BDBBoolTests {
     }
 
     private fun executeTests(workerThreads: Int, time: Long, uuid: String, con: BigchainDBConnectionDetails) {
-        val start = System.currentTimeMillis()
         val setThreads = Array(workerThreads) {
             val thread = SetBoolThread(time, it, workerThreads, uuid, con)
             thread.start()
@@ -157,8 +171,6 @@ object BDBBoolTests {
         for (thread in setThreads) {
             thread.join()
         }
-        val end = System.currentTimeMillis()
-        println(end - start)
         var benchmarkFile = File("./benchmarks/bdb/setBool${workerThreads}.txt")
         if (benchmarkFile.exists()) {
             benchmarkFile.delete()

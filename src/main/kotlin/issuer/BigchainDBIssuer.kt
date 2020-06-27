@@ -1,11 +1,9 @@
 package issuer
 
 import com.bigchaindb.model.MetaData
-import com.google.api.client.json.Json
 import com.google.common.hash.Hashing
 import com.google.gson.Gson
 import connectionDetails.BigchainDBConnectionDetails
-import java.lang.Exception
 import java.nio.charset.Charset
 import java.security.KeyFactory
 import java.security.Signature
@@ -58,10 +56,7 @@ class BigchainDBIssuer : AbstractIssuer {
                 newMetaData.setMetaData(data.key, data.value)
             }
             newMetaData.setMetaData("domain", value)
-            var start = System.currentTimeMillis()
             connectionDetails.update(newMetaData, latestId, assetId)
-            var end = System.currentTimeMillis()
-            println(end - start)
         }
     override var signedAddress: String
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
