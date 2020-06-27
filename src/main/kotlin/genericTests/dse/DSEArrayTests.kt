@@ -37,12 +37,20 @@ object DSEArrayTests {
 
         override fun testFunc(): Boolean {
             id = UUID.randomUUID().toString()
-            return session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int});").wasApplied()
+            return try {
+                session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int});").wasApplied()
+            } catch (e: Exception) { false }
         }
 
         override fun preaction() {
             if (lastSuccess && id != null) {
-                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id;")
+                var success = false
+                while(!success) {
+                    try {
+                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id IF EXISTS;")
+                        success = true
+                    } catch (e: Exception) {  }
+                }
             }
             setValue = (System.currentTimeMillis() % 2000).toInt() + 221
         }
@@ -50,14 +58,22 @@ object DSEArrayTests {
 
     private class RemoveThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "removeArray", "dse") {
         override fun testFunc(): Boolean {
-            val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int}  ALLOW FILTERING").one()?.getUuid(0)
-                ?: return true
-            return session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id;").wasApplied()
+            return try {
+                val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int}  ALLOW FILTERING").one()?.getUuid(0)
+                    ?: return true
+                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id;").wasApplied()
+            } catch (e: Exception) { false }
         }
 
         override fun preaction() {
             if (lastSuccess) {
-                session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', ${setValue as Int});")
+                var success = false
+                while(!success) {
+                    try {
+                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', ${setValue as Int});")
+                        success = true
+                    } catch (e: Exception) {  }
+                }
             }
             setValue = (System.currentTimeMillis() % 221).toInt()
         }
