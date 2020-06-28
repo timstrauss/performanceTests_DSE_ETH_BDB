@@ -62,7 +62,11 @@ object DSEArrayTests {
                 val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int}  ALLOW FILTERING").one()?.getUuid(0)
                     ?: return true
                 session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id;").wasApplied()
-            } catch (e: Exception) { false }
+                true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
         }
 
         override fun preaction() {

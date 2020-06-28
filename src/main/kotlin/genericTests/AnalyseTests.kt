@@ -11,6 +11,11 @@ fun main() {
     printForFileName("setBool2", "SET BOOL")
     printForFileName("getInt2", "GET INT")
     printForFileName("setInt2", "SET INT")
+    printForFileName("setBoolMapping2", "SET MAPPING")
+    printForFileName("getBoolMapping2", "GET MAPPING")
+    printForFileName("addArray2", "ADD ARRAY")
+    printForFileName("removeArray2", "REMOVE ARRAY")
+    printForFileName("getArray2", "GET ARRAY")
 }
 
 fun printForFileName(name: String, title: String) {
