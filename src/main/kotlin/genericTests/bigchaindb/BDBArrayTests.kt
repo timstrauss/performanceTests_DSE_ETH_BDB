@@ -67,7 +67,7 @@ object BDBArrayTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, true, "addArray", "bdb") {
         var success: Boolean? = null
 
@@ -173,7 +173,7 @@ object BDBArrayTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, true, "removeArray", "bdb") {
         var success: Boolean? = null
 
@@ -280,7 +280,7 @@ object BDBArrayTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, false, "getArray", "bdb") {
         override fun testFunc(): Boolean {
             val db = mongoClient.getDatabase("bigchain")

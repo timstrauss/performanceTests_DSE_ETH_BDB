@@ -68,7 +68,7 @@ object BDBBoolMappingTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, true, "setBoolMapping", "bdb") {
         var success: Boolean? = null
 
@@ -135,7 +135,7 @@ object BDBBoolMappingTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, false, "getBoolMapping", "bdb") {
         override fun testFunc(): Boolean {
             val db = mongoClient.getDatabase("bigchain")

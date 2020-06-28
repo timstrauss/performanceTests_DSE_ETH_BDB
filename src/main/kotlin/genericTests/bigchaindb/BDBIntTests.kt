@@ -66,7 +66,7 @@ object BDBIntTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, true, "setInt", "bdb") {
         var success: Boolean? = null
 
@@ -131,7 +131,7 @@ object BDBIntTests {
         workerThreads: Int,
         val uuid: String,
         val con: BigchainDBConnectionDetails,
-        val mongoClient: MongoClient = MongoClient()
+        val mongoClient: MongoClient = MongoClient(TestInfo.nodeHost)
     ) : TestThread(workerThreads, threadNum, time, false, "getInt", "bdb") {
         override fun testFunc(): Boolean {
             val db = mongoClient.getDatabase("bigchain")
