@@ -76,7 +76,7 @@ fun printForFileName(name: String, title: String) {
     println("80%:\t${timesDse[(timesDse.size / 10) * 8]}")
     println("90%:\t${timesDse[(timesDse.size / 10) * 9]}")
     println("100%:\t${timesDse[(timesDse.size - 1)]}")
-    println("ETH")
+    println("BDB")
     println("10%:\t${timesBdb[(timesBdb.size / 10) * 1]}")
     println("20%:\t${timesBdb[(timesBdb.size / 10) * 2]}")
     println("30%:\t${timesBdb[(timesBdb.size / 10) * 3]}")

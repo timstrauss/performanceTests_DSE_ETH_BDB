@@ -59,7 +59,7 @@ object DSEArrayTests {
     private class RemoveThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "removeArray", "dse") {
         override fun testFunc(): Boolean {
             return try {
-                val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int}  ALLOW FILTERING").one()?.getUuid(0)
+                val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(0)
                     ?: return true
                 session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id;").wasApplied()
                 true
