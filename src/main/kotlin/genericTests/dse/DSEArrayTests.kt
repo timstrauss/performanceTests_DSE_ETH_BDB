@@ -47,9 +47,9 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id IF EXISTS;")
+                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int};")
                         success = true
-                    } catch (e: Exception) {  }
+                    } catch (e: Exception) { e.printStackTrace() }
                 }
             }
             setValue = (System.currentTimeMillis() % 2000).toInt() + 221
@@ -61,7 +61,7 @@ object DSEArrayTests {
             return try {
                 val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(0)
                     ?: return true
-                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id;").wasApplied()
+                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int};").wasApplied()
                 true
             } catch (e: Exception) {
                 e.printStackTrace()
