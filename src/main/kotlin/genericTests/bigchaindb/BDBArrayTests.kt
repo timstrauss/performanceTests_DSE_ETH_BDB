@@ -73,8 +73,9 @@ object BDBArrayTests {
 
         override fun testFunc(): Boolean {
             success = null
-            success = null
-            while (success != true && needReset) {
+            while (success != true) {
+                success = null
+
                 val db = mongoClient.getDatabase("bigchain")
                 val assetCollection = db.getCollection("assets")
                 val transactionsCollection = db.getCollection("transactions")
@@ -198,8 +199,9 @@ object BDBArrayTests {
 
         override fun testFunc(): Boolean {
             success = null
-            while (success != true && needReset) {
+            while (success != true) {
                 success = null
+
                 val db = mongoClient.getDatabase("bigchain")
                 val assetCollection = db.getCollection("assets")
                 val transactionsCollection = db.getCollection("transactions")
@@ -247,6 +249,7 @@ object BDBArrayTests {
                     sleep(0, 1)
                 }
             }
+
             return success!!
         }
 
