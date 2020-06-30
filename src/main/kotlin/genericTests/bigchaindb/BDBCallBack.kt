@@ -9,12 +9,10 @@ class BDBCallBack(val success: (value: Boolean) -> Unit) : GenericCallback {
     }
 
     override fun transactionMalformed(response: Response?) {
-        println("ERROR: " + response?.body?.string())
         success(false)
     }
 
     override fun otherError(response: Response?) {
-        println("ERROR: " + response?.body?.string())
         success(false)
     }
 }
