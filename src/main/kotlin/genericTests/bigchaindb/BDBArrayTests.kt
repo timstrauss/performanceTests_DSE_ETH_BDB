@@ -111,7 +111,7 @@ object BDBArrayTests {
                 .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                 .operation(Operations.TRANSFER)
                 .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                .sendTransaction(BDBBoolTests.CallBackBDB() {
+                .sendTransaction(BDBCallBack {
                     success = it
                 })
             while (success == null) {
@@ -157,7 +157,7 @@ object BDBArrayTests {
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
                     .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBBoolTests.CallBackBDB() {
+                    .sendTransaction(BDBCallBack {
                         success = it
                     })
                 while (success == null) {
@@ -217,7 +217,7 @@ object BDBArrayTests {
                 .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                 .operation(Operations.TRANSFER)
                 .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                .sendTransaction(BDBBoolTests.CallBackBDB() {
+                .sendTransaction(BDBCallBack {
                     success = it
                 })
             while (success == null) {
@@ -263,7 +263,7 @@ object BDBArrayTests {
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
                     .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBBoolTests.CallBackBDB() {
+                    .sendTransaction(BDBCallBack {
                         success = it
                     })
                 while (success == null) {
@@ -374,22 +374,6 @@ object BDBArrayTests {
             val file = File("./benchmarks/bdb/getArray${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
-        }
-    }
-
-    class CallBackBDB(val success: (value: Boolean) -> Unit) : GenericCallback {
-        override fun pushedSuccessfully(response: Response?) {
-            success(true)
-        }
-
-        override fun transactionMalformed(response: Response?) {
-            println("ERROR: " + response?.body?.string())
-            success(false)
-        }
-
-        override fun otherError(response: Response?) {
-            println("ERROR: " + response?.body?.string())
-            success(false)
         }
     }
 }

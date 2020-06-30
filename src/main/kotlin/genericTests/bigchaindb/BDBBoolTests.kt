@@ -11,10 +11,11 @@ import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
 import com.mongodb.client.model.Filters
 import connectionDetails.BigchainDBConnectionDetails
-import genericTests.TestThread
 import genericTests.TestInfo
+import genericTests.TestThread
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
+import okhttp3.RequestBody
 import okhttp3.Response
 import org.bson.Document
 import java.io.File
@@ -105,7 +106,7 @@ object BDBBoolTests {
             val tt: String? = null
             val metadata = MetaData()
             metadata.setMetaData("value", (setValue as Boolean).toString())
-            BigchainDbTransactionBuilder
+            val transaction = BigchainDbTransactionBuilder
                 .init()
                 .addMetaData(metadata)
                 .addAssets(assetId, String::class.java)
@@ -113,7 +114,7 @@ object BDBBoolTests {
                 .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                 .operation(Operations.TRANSFER)
                 .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                .sendTransaction(CallBackBDB() {
+                .sendTransaction(BDBCallBack {
                     success = it
                 })
             while (success == null) {
@@ -205,20 +206,6 @@ object BDBBoolTests {
             val file = File("./benchmarks/bdb/getBool${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
-        }
-    }
-
-    class CallBackBDB(val success: (value: Boolean) -> Unit) : GenericCallback {
-        override fun pushedSuccessfully(response: Response?) {
-            success(true)
-        }
-
-        override fun transactionMalformed(response: Response?) {
-            success(false)
-        }
-
-        override fun otherError(response: Response?) {
-            success(false)
         }
     }
 }

@@ -111,7 +111,7 @@ object BDBIntTests {
                 .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                 .operation(Operations.TRANSFER)
                 .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                .sendTransaction(CallBackBDB() {
+                .sendTransaction(BDBCallBack {
                     success = it
                 })
             while (success == null) {
@@ -203,20 +203,6 @@ object BDBIntTests {
             val file = File("./benchmarks/bdb/getInt${workerThreads}T$index.txt")
             benchmarkFile.appendText(file.readText())
             file.delete()
-        }
-    }
-
-    class CallBackBDB(val success: (value: Boolean) -> Unit) : GenericCallback {
-        override fun pushedSuccessfully(response: Response?) {
-            success(true)
-        }
-
-        override fun transactionMalformed(response: Response?) {
-            success(false)
-        }
-
-        override fun otherError(response: Response?) {
-            success(false)
         }
     }
 }
