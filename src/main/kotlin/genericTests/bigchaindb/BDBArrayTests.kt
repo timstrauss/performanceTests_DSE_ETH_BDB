@@ -383,10 +383,12 @@ object BDBArrayTests {
         }
 
         override fun transactionMalformed(response: Response?) {
+            println("ERROR: " + response?.body?.string())
             success(false)
         }
 
         override fun otherError(response: Response?) {
+            println("ERROR: " + response?.body?.string())
             success(false)
         }
     }
