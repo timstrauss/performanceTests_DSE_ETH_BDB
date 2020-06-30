@@ -8,6 +8,7 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
     val creation = System.nanoTime() / 1000
     var text = ""
     var lastSuccess = false
+    var needReset = false
 
     override fun run() {
         var benchmarkFile = File("./benchmarks/$folder/$fileName${workerThreads}T$threadNum.txt")
@@ -28,6 +29,7 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
         val transactionStartFirst: Long = System.nanoTime()
         val successFirst = testFunc()
         val transactionEndFirst: Long = System.nanoTime()
+        setReset(true)
         lastSuccess = successFirst
         setText("${(transactionEndFirst - transactionStartFirst) / 1000}|$threadNum|${(transactionStartFirst / 1000) - creation}|${successFirst.toInt()}", false)
         time -= ((transactionEndFirst - transactionStartFirst) / 1000000).toInt()
@@ -63,6 +65,11 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
             text += addVal
         }
         return returnVal
+    }
+
+    @Synchronized
+    protected fun setReset(reset: Boolean) {
+        needReset = reset
     }
 
     fun Boolean.toInt() = if (this) 1 else 0

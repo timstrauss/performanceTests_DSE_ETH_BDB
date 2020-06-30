@@ -122,7 +122,7 @@ object BDBArrayTests {
 
         override fun preaction() {
             success = null
-            while (success != true) {
+            while (success != true && needReset) {
                 success = null
 
                 val db = mongoClient.getDatabase("bigchain")
@@ -171,6 +171,9 @@ object BDBArrayTests {
                 while (success == null) {
                     sleep(0, 1)
                 }
+            }
+            if (success == true) {
+                setReset(false)
             }
         }
     }
@@ -235,7 +238,7 @@ object BDBArrayTests {
 
         override fun preaction() {
             success = null
-            while (success != true) {
+            while (success != true && needReset) {
                 success = null
 
                 val db = mongoClient.getDatabase("bigchain")
@@ -285,6 +288,9 @@ object BDBArrayTests {
                 while (success == null) {
                     sleep(0, 1)
                 }
+            }
+            if (success == true) {
+                setReset(false)
             }
             setValue = (System.currentTimeMillis() % 221).toInt()
         }
