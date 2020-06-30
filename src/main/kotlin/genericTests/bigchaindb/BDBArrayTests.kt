@@ -141,7 +141,16 @@ object BDBArrayTests {
                         BasicDBObject("id", assetId)
                     )
                 ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
+                val cuurentMetadataValue = gson.fromJson((metadataCollection.find(
+                    BasicDBObject(
+                        "id",
+                        metadataId
+                    )
+                ).first()?.get("metadata") as Document?)?.getString("value") ?: "[]", MutableList::class.java) as MutableList<Int>
                 val metadataValue = MutableList(221) { it }
+                if (metadataValue == cuurentMetadataValue) {
+                    break
+                }
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
@@ -245,7 +254,16 @@ object BDBArrayTests {
                         BasicDBObject("id", assetId)
                     )
                 ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
+                val cuurentMetadataValue = gson.fromJson((metadataCollection.find(
+                    BasicDBObject(
+                        "id",
+                        metadataId
+                    )
+                ).first()?.get("metadata") as Document?)?.getString("value") ?: "[]", MutableList::class.java) as MutableList<Int>
                 val metadataValue = MutableList(221) { it }
+                if (metadataValue == cuurentMetadataValue) {
+                    break
+                }
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
