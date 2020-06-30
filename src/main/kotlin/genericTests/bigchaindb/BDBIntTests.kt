@@ -72,51 +72,55 @@ object BDBIntTests {
 
         override fun testFunc(): Boolean {
             success = null
-            val db = mongoClient.getDatabase("bigchain")
-            val assetCollection = db.getCollection("assets")
-            val transactionsCollection = db.getCollection("transactions")
-            val metadataCollection = db.getCollection("metadata")
-            val assetId = assetCollection.find(
-                Filters.and(
-                    BasicDBObject("data", BasicDBObject("property", "intvar")),
-                    BasicDBObject("data", BasicDBObject("uuid", uuid))
-                )
-            ).first()?.getString("id") ?: return false
-            val metadataId = transactionsCollection.find(
-                BasicDBObject(
-                    "asset",
-                    BasicDBObject("id", assetId)
-                )
-            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
-            val metadataValue = (metadataCollection.find(
-                BasicDBObject(
-                    "id",
-                    metadataId
-                )
-            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
-            if (metadataValue.toInt() == setValue as Int) {
-                return true
+            while (success != true) {
+                success = null
+                val db = mongoClient.getDatabase("bigchain")
+                val assetCollection = db.getCollection("assets")
+                val transactionsCollection = db.getCollection("transactions")
+                val metadataCollection = db.getCollection("metadata")
+                val assetId = assetCollection.find(
+                    Filters.and(
+                        BasicDBObject("data", BasicDBObject("property", "intvar")),
+                        BasicDBObject("data", BasicDBObject("uuid", uuid))
+                    )
+                ).first()?.getString("id") ?: return false
+                val metadataId = transactionsCollection.find(
+                    BasicDBObject(
+                        "asset",
+                        BasicDBObject("id", assetId)
+                    )
+                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
+                val metadataValue = (metadataCollection.find(
+                    BasicDBObject(
+                        "id",
+                        metadataId
+                    )
+                ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
+                if (metadataValue.toInt() == setValue as Int) {
+                    return true
+                }
+                val fulFill = FulFill()
+                fulFill.outputIndex = 0
+                fulFill.transactionId = metadataId
+                val tt: String? = null
+                val metadata = MetaData()
+                metadata.setMetaData("value", (setValue as Int).toString())
+                BigchainDbTransactionBuilder
+                    .init()
+                    .addMetaData(metadata)
+                    .addAssets(assetId, String::class.java)
+                    .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
+                    .addOutput("1", con.keyPair.public as EdDSAPublicKey)
+                    .operation(Operations.TRANSFER)
+                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                    .sendTransaction(BDBCallBack {
+                        success = it
+                    })
+                while (success == null) {
+                    sleep(0, 1)
+                }
             }
-            val fulFill = FulFill()
-            fulFill.outputIndex = 0
-            fulFill.transactionId = metadataId
-            val tt: String? = null
-            val metadata = MetaData()
-            metadata.setMetaData("value", (setValue as Int).toString())
-            BigchainDbTransactionBuilder
-                .init()
-                .addMetaData(metadata)
-                .addAssets(assetId, String::class.java)
-                .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
-                .addOutput("1", con.keyPair.public as EdDSAPublicKey)
-                .operation(Operations.TRANSFER)
-                .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                .sendTransaction(BDBCallBack {
-                    success = it
-                })
-            while (success == null) {
-                sleep(0, 1)
-            }
+
             return success!!
         }
 
