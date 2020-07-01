@@ -95,8 +95,6 @@ object BDBBoolTests {
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
-                val previousSize =
-                    TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions.size
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", (setValue as Boolean).toString())
