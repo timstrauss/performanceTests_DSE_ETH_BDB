@@ -19,14 +19,14 @@ fun main() {
 
     con.closeSession()
 
-    DSEBoolTests.run(2)
+    DSEBoolTests.run(TestInfo.threads)
     println("bool done")
-    DSEIntTests.run(2)
+    DSEIntTests.run(TestInfo.threads)
     println("int done")
-    DSEStringTests.run(2)
+    DSEStringTests.run(TestInfo.threads)
     println("string done")
-    DSEBoolMappingTests.run(2)
+    DSEBoolMappingTests.run(TestInfo.threads)
     println("mapping done")
-    DSEArrayTests.run(2)
+    DSEArrayTests.run(TestInfo.threads)
     println("array done")
 }

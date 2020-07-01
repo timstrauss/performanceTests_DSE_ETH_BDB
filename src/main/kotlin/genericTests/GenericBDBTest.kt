@@ -5,14 +5,14 @@ package genericTests
 import genericTests.bigchaindb.*
 
 fun main() {
-    BDBBoolTests.run(2)
+    BDBBoolTests.run(TestInfo.threads)
     println("bool done")
-    BDBIntTests.run(2)
+    BDBIntTests.run(TestInfo.threads)
     println("int done")
-    BDBStringTests.run(2)
+    BDBStringTests.run(TestInfo.threads)
     println("string done")
-    BDBBoolMappingTests.run(2)
+    BDBBoolMappingTests.run(TestInfo.threads)
     println("mapping done")
-    BDBArrayTests.run(2)
+    BDBArrayTests.run(TestInfo.threads)
     println("array done")
 }

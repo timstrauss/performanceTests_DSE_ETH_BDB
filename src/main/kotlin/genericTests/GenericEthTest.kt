@@ -5,15 +5,15 @@ package genericTests
 import genericTests.ethereum.*
 
 fun main() {
-    EthereumBoolTests.run(2)
+    EthereumBoolTests.run(TestInfo.threads)
     println("bool done")
-    EthereumIntTests.run(2)
+    EthereumIntTests.run(TestInfo.threads)
     println("int done")
-    EthereumStringTests.run(2)
+    EthereumStringTests.run(TestInfo.threads)
     println("string done")
-    EthereumBoolMappingTests.run(2)
+    EthereumBoolMappingTests.run(TestInfo.threads)
     println("mapping done")
-    EthereumArrayTests.run(2)
+    EthereumArrayTests.run(TestInfo.threads)
     println("array done")
 }
 
