@@ -1,5 +1,6 @@
 package genericTests.bigchaindb
 
+import com.bigchaindb.api.TransactionsApi
 import com.bigchaindb.builders.BigchainDbTransactionBuilder
 import com.bigchaindb.constants.Operations
 import com.bigchaindb.model.FulFill
@@ -83,39 +84,34 @@ object BDBStringTests {
                         BasicDBObject("data", BasicDBObject("property", "stringvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: return false
+                ).limit(1).first()?.getString("id") ?: return false
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
-                val metadataValue = (metadataCollection.find(
-                    BasicDBObject(
-                        "id",
-                        metadataId
-                    )
-                ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
-                if (metadataValue == setValue as String) {
-                    return true
-                }
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", (setValue as String))
-                BigchainDbTransactionBuilder
+                val transaction = BigchainDbTransactionBuilder
                     .init()
                     .addMetaData(metadata)
                     .addAssets(assetId, String::class.java)
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -147,19 +143,19 @@ object BDBStringTests {
                     BasicDBObject("data", BasicDBObject("property", "stringvar")),
                     BasicDBObject("data", BasicDBObject("uuid", uuid))
                 )
-            ).first()?.getString("id") ?: return false
+            ).limit(1).first()?.getString("id") ?: return false
             val metadataId = transactionsCollection.find(
                 BasicDBObject(
                     "asset",
                     BasicDBObject("id", assetId)
                 )
-            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: return false
             val metadataValue = (metadataCollection.find(
                 BasicDBObject(
                     "id",
                     metadataId
                 )
-            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
+            ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false
             return true
         }
     }

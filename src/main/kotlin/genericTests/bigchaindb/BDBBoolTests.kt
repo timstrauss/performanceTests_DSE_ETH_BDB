@@ -85,22 +85,13 @@ object BDBBoolTests {
                         BasicDBObject("data", BasicDBObject("property", "boolvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: return false
+                ).limit(1).first()?.getString("id") ?: return false
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
-                val metadataValue = (metadataCollection.find(
-                    BasicDBObject(
-                        "id",
-                        metadataId
-                    )
-                ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
-                if (metadataValue.toBoolean() == setValue as Boolean) {
-                    return true
-                }
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
@@ -116,10 +107,14 @@ object BDBBoolTests {
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -151,19 +146,19 @@ object BDBBoolTests {
                     BasicDBObject("data", BasicDBObject("property", "boolvar")),
                     BasicDBObject("data", BasicDBObject("uuid", uuid))
                 )
-            ).first()?.getString("id") ?: return false
+            ).limit(1).first()?.getString("id") ?: return false
             val metadataId = transactionsCollection.find(
                 BasicDBObject(
                     "asset",
                     BasicDBObject("id", assetId)
                 )
-            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: return false
             val metadataValue = (metadataCollection.find(
                 BasicDBObject(
                     "id",
                     metadataId
                 )
-            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
+            ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false
             return true
         }
     }

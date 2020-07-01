@@ -85,20 +85,20 @@ object BDBArrayTests {
                         BasicDBObject("data", BasicDBObject("property", "arrayvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: return false
+                ).limit(1).first()?.getString("id") ?: return false
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val metadataValue = gson.fromJson(
                     (metadataCollection.find(
                         BasicDBObject(
                             "id",
                             metadataId
                         )
-                    ).first()?.get("metadata") as Document?)?.getString("value") ?: return false,
+                    ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false,
                     MutableList::class.java
                 ) as MutableList<Int>
                 metadataValue.add(setValue as Int)
@@ -110,17 +110,21 @@ object BDBArrayTests {
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", gson.toJson(metadataValue))
-                BigchainDbTransactionBuilder
+                val transaction = BigchainDbTransactionBuilder
                     .init()
                     .addMetaData(metadata)
                     .addAssets(assetId, String::class.java)
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -143,40 +147,35 @@ object BDBArrayTests {
                         BasicDBObject("data", BasicDBObject("property", "arrayvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: break
+                ).limit(1).first()?.getString("id") ?: break
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
-                val cuurentMetadataValue = gson.fromJson((metadataCollection.find(
-                    BasicDBObject(
-                        "id",
-                        metadataId
-                    )
-                ).first()?.get("metadata") as Document?)?.getString("value") ?: "[]", MutableList::class.java) as MutableList<Int>
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val metadataValue = MutableList(221) { it }
-                if (metadataValue == cuurentMetadataValue) {
-                    break
-                }
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", gson.toJson(metadataValue))
-                BigchainDbTransactionBuilder
+                val transaction = BigchainDbTransactionBuilder
                     .init()
                     .addMetaData(metadata)
                     .addAssets(assetId, String::class.java)
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -211,20 +210,20 @@ object BDBArrayTests {
                         BasicDBObject("data", BasicDBObject("property", "arrayvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: return false
+                ).limit(1).first()?.getString("id") ?: return false
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val metadataValue = gson.fromJson(
                     (metadataCollection.find(
                         BasicDBObject(
                             "id",
                             metadataId
                         )
-                    ).first()?.get("metadata") as Document?)?.getString("value") ?: return false,
+                    ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false,
                     MutableList::class.java
                 ) as MutableList<Int>
                 metadataValue.remove(setValue as Int)
@@ -234,17 +233,21 @@ object BDBArrayTests {
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", gson.toJson(metadataValue))
-                BigchainDbTransactionBuilder
+                val transaction = BigchainDbTransactionBuilder
                     .init()
                     .addMetaData(metadata)
                     .addAssets(assetId, String::class.java)
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -267,41 +270,35 @@ object BDBArrayTests {
                         BasicDBObject("data", BasicDBObject("property", "arrayvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: break
+                ).limit(1).first()?.getString("id") ?: break
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
-                val cuurentMetadataValue = gson.fromJson((metadataCollection.find(
-                    BasicDBObject(
-                        "id",
-                        metadataId
-                    )
-                ).first()?.get("metadata") as Document?)?.getString("value") ?: "[]", MutableList::class.java) as MutableList<Int>
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val metadataValue = MutableList(221) { it }
-                if (metadataValue == cuurentMetadataValue) {
-                    break
-                }
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
-                val previousSize = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).transactions.size
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", gson.toJson(metadataValue))
-                BigchainDbTransactionBuilder
+                val transaction = BigchainDbTransactionBuilder
                     .init()
                     .addMetaData(metadata)
                     .addAssets(assetId, String::class.java)
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -331,19 +328,19 @@ object BDBArrayTests {
                     BasicDBObject("data", BasicDBObject("property", "arrayvar")),
                     BasicDBObject("data", BasicDBObject("uuid", uuid))
                 )
-            ).first()?.getString("id") ?: return false
+            ).limit(1).first()?.getString("id") ?: return false
             val metadataId = transactionsCollection.find(
                 BasicDBObject(
                     "asset",
                     BasicDBObject("id", assetId)
                 )
-            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: return false
             val metadataValue = (metadataCollection.find(
                 BasicDBObject(
                     "id",
                     metadataId
                 )
-            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
+            ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false
             return gson.fromJson(metadataValue, MutableList::class.java) != null
         }
     }

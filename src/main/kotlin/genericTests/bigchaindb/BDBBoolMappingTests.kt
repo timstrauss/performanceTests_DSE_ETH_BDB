@@ -85,24 +85,21 @@ object BDBBoolMappingTests {
                         BasicDBObject("data", BasicDBObject("property", "booolmappingvar")),
                         BasicDBObject("data", BasicDBObject("uuid", uuid))
                     )
-                ).first()?.getString("id") ?: return false
+                ).limit(1).first()?.getString("id") ?: return false
                 val metadataId = transactionsCollection.find(
                     BasicDBObject(
                         "asset",
                         BasicDBObject("id", assetId)
                     )
-                ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: assetId
+                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
                 val metadataValue = gson.fromJson(
                     (metadataCollection.find(
                         BasicDBObject(
                             "id",
                             metadataId
                         )
-                    ).first()?.get("metadata") as Document?)?.getString("value") ?: return false, HashMap::class.java
+                    ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false, HashMap::class.java
                 ) as HashMap<String, Boolean>
-                if (metadataValue["test2"] == setValue as Boolean) {
-                    return true
-                }
                 metadataValue["test2"] = true
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
@@ -112,17 +109,21 @@ object BDBBoolMappingTests {
                 val tt: String? = null
                 val metadata = MetaData()
                 metadata.setMetaData("value", gson.toJson(metadataValue))
-                BigchainDbTransactionBuilder
+                val transaction = BigchainDbTransactionBuilder
                     .init()
                     .addMetaData(metadata)
                     .addAssets(assetId, String::class.java)
                     .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
                     .addOutput("1", con.keyPair.public as EdDSAPublicKey)
                     .operation(Operations.TRANSFER)
-                    .buildAndSign(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                    .sendTransaction(BDBCallBack {
+                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                if (transaction.id == metadataId) {
+                    success = true
+                } else {
+                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
                         success = it
                     })
+                }
                 while (success == null) {
                     sleep(0, 1)
                 }
@@ -154,19 +155,19 @@ object BDBBoolMappingTests {
                     BasicDBObject("data", BasicDBObject("property", "booolmappingvar")),
                     BasicDBObject("data", BasicDBObject("uuid", uuid))
                 )
-            ).first()?.getString("id") ?: return false
+            ).limit(1).first()?.getString("id") ?: return false
             val metadataId = transactionsCollection.find(
                 BasicDBObject(
                     "asset",
                     BasicDBObject("id", assetId)
                 )
-            ).sort(BasicDBObject("\$natural", -1)).first()?.getString("id") ?: return false
+            ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: return false
             val metadataValue = (metadataCollection.find(
                 BasicDBObject(
                     "id",
                     metadataId
                 )
-            ).first()?.get("metadata") as Document?)?.getString("value") ?: return false
+            ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false
             return gson.fromJson(metadataValue, HashMap::class.java)["test"] == true
         }
     }
