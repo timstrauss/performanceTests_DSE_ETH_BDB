@@ -47,7 +47,7 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int} IF EXIST;")
+                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int} IF EXISTS;")
                         success = true
                     } catch (e: Exception) { e.printStackTrace() }
                 }
@@ -76,7 +76,7 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXIST;")
+                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXISTS;")
                         success = true
                     } catch (e: Exception) {  }
                 }
