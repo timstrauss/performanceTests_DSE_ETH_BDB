@@ -35,7 +35,7 @@ object DSEStringTests {
 
     private class SetStringThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setString", "dse") {
         override fun testFunc(): Boolean {
-            return session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid'").wasApplied()
+            return session.execute("UPDATE tim_space.generics SET stringvar = '${this.setValue as String}' WHERE uuid = '$uuid' IF EXISTS").wasApplied()
         }
 
         override fun preaction() {

@@ -34,7 +34,7 @@ object DSEIntTests {
 
     private class SetIntThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setInt", "dse") {
         override fun testFunc(): Boolean {
-            return session.execute("UPDATE tim_space.generics SET intvar = ${this.setValue as Int} WHERE uuid = '$uuid'").wasApplied()
+            return session.execute("UPDATE tim_space.generics SET intvar = ${this.setValue as Int} WHERE uuid = '$uuid' IF EXISTS").wasApplied()
         }
 
         override fun preaction() {

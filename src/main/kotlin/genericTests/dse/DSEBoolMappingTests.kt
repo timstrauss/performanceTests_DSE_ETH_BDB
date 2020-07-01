@@ -36,9 +36,9 @@ object DSEBoolMappingTests {
         override fun testFunc(): Boolean {
             val exists = session.execute("SELECT COUNT(*) as num FROM tim_space.genericsMapping WHERE uuid = '$uuid' AND stringvar = 'test2'").one()?.getLong(0) ?: return false
             return if (exists == 0L) {
-                session.execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', ${setValue as Boolean}, 'test2');").wasApplied()
+                session.execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', ${setValue as Boolean}, 'test2') IF NOT EXISTS;").wasApplied()
             } else {
-                session.execute("UPDATE tim_space.genericsMapping SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid' AND stringvar = 'test2'").wasApplied()
+                session.execute("UPDATE tim_space.genericsMapping SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid' AND stringvar = 'test2' IF EXISTS").wasApplied()
             }
         }
 
