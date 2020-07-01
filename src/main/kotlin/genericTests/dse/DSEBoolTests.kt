@@ -34,7 +34,7 @@ object DSEBoolTests {
 
     private class SetBoolThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setBool", "dse") {
         override fun testFunc(): Boolean {
-            return session.execute("UPDATE tim_space.generics SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid' IF EXISTS").wasApplied()
+            return session.execute("UPDATE tim_space.generics SET boolvar = ${this.setValue as Boolean} WHERE uuid = '$uuid'").wasApplied()
         }
 
         override fun preaction() {

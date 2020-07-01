@@ -38,7 +38,7 @@ object DSEArrayTests {
         override fun testFunc(): Boolean {
             id = UUID.randomUUID().toString()
             return try {
-                session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXISTS;").wasApplied()
+                session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int});").wasApplied()
             } catch (e: Exception) { false }
         }
 
@@ -47,7 +47,7 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int} IF EXISTS;")
+                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int};")
                         success = true
                     } catch (e: Exception) {  }
                 }
@@ -63,7 +63,7 @@ object DSEArrayTests {
             return try {
                 id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(0)
                     ?: return false
-                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int} IF EXISTS;").wasApplied()
+                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int};").wasApplied()
                 true
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -76,7 +76,7 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXISTS;")
+                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int});")
                         success = true
                     } catch (e: Exception) {  }
                 }
