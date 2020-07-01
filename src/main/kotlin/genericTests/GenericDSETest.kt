@@ -13,7 +13,7 @@ fun main() {
 
     con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.generics (uuid text PRIMARY KEY, boolvar boolean, intvar int, stringvar text);")
     con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.genericsMapping (uuid text, stringvar text, boolvar boolean, PRIMARY KEY(uuid, stringvar));")
-    con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.genericsArray (id UUID, uuid text, intvar int, PRIMARY KEY((uuid, intvar), id));")
+    con.session().execute("CREATE TABLE IF NOT EXISTS tim_space.genericsArray (id UUID, uuid text, intvar int, PRIMARY KEY((uuid), intvar, id));")
 
     Thread.sleep(1000)
 

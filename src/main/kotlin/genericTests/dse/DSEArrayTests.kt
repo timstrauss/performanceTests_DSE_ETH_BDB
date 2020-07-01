@@ -47,7 +47,7 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int};")
+                        session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int} IF EXIST;")
                         success = true
                     } catch (e: Exception) { e.printStackTrace() }
                 }
@@ -57,10 +57,12 @@ object DSEArrayTests {
     }
 
     private class RemoveThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "removeArray", "dse") {
+        var id: UUID? = null
+
         override fun testFunc(): Boolean {
             return try {
-                val id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(0)
-                    ?: return true
+                id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(0)
+                    ?: return false
                 session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int};").wasApplied()
                 true
             } catch (e: Exception) {
@@ -74,7 +76,7 @@ object DSEArrayTests {
                 var success = false
                 while(!success) {
                     try {
-                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', ${setValue as Int});")
+                        session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXIST;")
                         success = true
                     } catch (e: Exception) {  }
                 }
@@ -86,7 +88,7 @@ object DSEArrayTests {
     private class GetThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getArray", "dse") {
         override fun testFunc(): Boolean {
             return try {
-                session.execute("SELECT intvar FROM tim_space.genericsArray WHERE uuid = '$uuid'").all()
+                session.execute("SELECT intvar FROM tim_space.genericsArray WHERE uuid = '$uuid' ALLOW FILTERING").all()
                 true
             } catch (e: Exception) {
                 false
