@@ -84,11 +84,31 @@ fun formatter(i: Long): String {
     var formatted = ""
     while (num > 0) {
         if (formatted == "") {
-            formatted = (num % 1000).toString()
+            formatted = toString(num % 1000)
         } else {
-            formatted = "${num % 1000}," + formatted
+            formatted = "${toString(num % 1000)}," + formatted
         }
         num /= 1000
     }
     return formatted
+}
+
+fun toString(i: Int): String {
+    return if (i < 10) {
+        "00$i"
+    } else if (i < 100) {
+        "0$i"
+    } else {
+        i.toString()
+    }
+}
+
+fun toString(i: Long): String {
+    return if (i < 10) {
+        "00$i"
+    } else if (i < 100) {
+        "0$i"
+    } else {
+        i.toString()
+    }
 }
