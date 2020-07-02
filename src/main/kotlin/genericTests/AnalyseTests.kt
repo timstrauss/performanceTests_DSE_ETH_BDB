@@ -25,7 +25,7 @@ fun printForFileName(name: String, title: String) {
     println("\\hline")
     println("\\multicolumn{4}{|c|}{$title (Number of threads: ${TestInfo.threads}) } \\\\")
     println("\\hline")
-    println("&Ethereum&DSE& BigchainDB \\\\")
+    println("&Ethereum&BigchainDB&DSE \\\\")
     println("\\hline")
 
 
