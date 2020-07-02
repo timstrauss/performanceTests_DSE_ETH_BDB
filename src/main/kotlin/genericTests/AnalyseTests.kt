@@ -3,6 +3,7 @@
 package genericTests
 
 import java.io.File
+import kotlin.math.roundToInt
 
 fun main() {
     printForFileName("getString${TestInfo.threads}", "Get String")
@@ -19,12 +20,11 @@ fun main() {
 }
 
 fun printForFileName(name: String, title: String) {
-    println("\\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }")
+    println("\\begin{tabular}{ |p{6cm}||p{2cm}|p{2cm}|p{2cm}|  }")
     println("\\hline")
     println("\\multicolumn{4}{|c|}{$title} \\\\")
     println("\\hline")
-    println("&Ethereum&DataStax Enterprise& BigchainDB \\\\")
-    println("\\hline")
+    println("&Ethereum&DSE& BigchainDB \\\\")
     println("\\hline")
 
 
@@ -46,21 +46,21 @@ fun printForFileName(name: String, title: String) {
     val timesBdb = LongArray(successBdb.size) {it -> successBdb[it].split("|")[0].toLong()}
     timesBdb.sort()
 
-    println("Number of transactions & ${timesEth.size} & ${timesDse.size} & ${timesBdb.size} \\\\")
+    println("Number of transactions & ${timesEth.size} & ${timesBdb.size} & ${timesBdb.size} \\\\")
     println("\\hline")
-    println("Average transaction time (\$\\mu\$s) & ${timesEth.average()} & ${timesDse.average()} & ${timesBdb.average()} \\\\")
+    println("\$\\varnothing\$ transaction time (rounded \$\\mu\$s) & ${timesEth.average().roundToInt()} & ${timesBdb.average().roundToInt()} & ${timesDse.average().roundToInt()} \\\\")
     println("\\hline")
-    println("Max time of top 10% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 1]} & ${timesDse[(timesDse.size / 10) * 1]} & ${timesBdb[(timesBdb.size / 10) * 1]} \\\\")
-    println("Max time of top 20% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 2]} & ${timesDse[(timesDse.size / 10) * 2]} & ${timesBdb[(timesBdb.size / 10) * 2]} \\\\")
-    println("Max time of top 30% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 3]} & ${timesDse[(timesDse.size / 10) * 3]} & ${timesBdb[(timesBdb.size / 10) * 3]} \\\\")
-    println("Max time of top 40% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 4]} & ${timesDse[(timesDse.size / 10) * 4]} & ${timesBdb[(timesBdb.size / 10) * 4]} \\\\")
-    println("Max time of top 50% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 5]} & ${timesDse[(timesDse.size / 10) * 5]} & ${timesBdb[(timesBdb.size / 10) * 5]} \\\\")
-    println("Max time of top 60% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 6]} & ${timesDse[(timesDse.size / 10) * 6]} & ${timesBdb[(timesBdb.size / 10) * 6]} \\\\")
-    println("Max time of top 70% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 7]} & ${timesDse[(timesDse.size / 10) * 7]} & ${timesBdb[(timesBdb.size / 10) * 7]} \\\\")
-    println("Max time of top 80% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 8]} & ${timesDse[(timesDse.size / 10) * 8]} & ${timesBdb[(timesBdb.size / 10) * 8]} \\\\")
-    println("Max time of top 90% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 9]} & ${timesDse[(timesDse.size / 10) * 9]} & ${timesBdb[(timesBdb.size / 10) * 9]} \\\\")
-    println("Max time of top 95% (\$\\mu\$s) & ${timesEth[(timesEth.size / 20) * 19]} & ${timesDse[(timesDse.size / 20) * 19]} & ${timesBdb[(timesBdb.size / 20) * 19]} \\\\")
-    println("Max time of top 100% (\$\\mu\$s) & ${timesEth[timesEth.size - 1]} & ${timesDse[timesDse.size - 1]} & ${timesBdb[timesBdb.size -1]} \\\\")
+    println("Max time of top 10% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 1]} & ${timesBdb[(timesBdb.size / 10) * 1]} & ${timesDse[(timesDse.size / 10) * 1]} \\\\")
+    println("Max time of top 20% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 2]} & ${timesBdb[(timesBdb.size / 10) * 2]} & ${timesDse[(timesDse.size / 10) * 2]} \\\\")
+    println("Max time of top 30% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 3]} & ${timesBdb[(timesBdb.size / 10) * 3]} & ${timesDse[(timesDse.size / 10) * 3]} \\\\")
+    println("Max time of top 40% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 4]} & ${timesBdb[(timesBdb.size / 10) * 4]} & ${timesDse[(timesDse.size / 10) * 4]} \\\\")
+    println("Max time of top 50% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 5]} & ${timesBdb[(timesBdb.size / 10) * 5]} & ${timesDse[(timesDse.size / 10) * 5]} \\\\")
+    println("Max time of top 60% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 6]} & ${timesBdb[(timesBdb.size / 10) * 6]} & ${timesDse[(timesDse.size / 10) * 6]} \\\\")
+    println("Max time of top 70% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 7]} & ${timesBdb[(timesBdb.size / 10) * 7]} & ${timesDse[(timesDse.size / 10) * 7]} \\\\")
+    println("Max time of top 80% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 8]} & ${timesBdb[(timesBdb.size / 10) * 8]} & ${timesDse[(timesDse.size / 10) * 8]} \\\\")
+    println("Max time of top 90% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 9]} & ${timesBdb[(timesBdb.size / 10) * 9]} & ${timesDse[(timesDse.size / 10) * 9]} \\\\")
+    println("Max time of top 95% (\$\\mu\$s) & ${timesEth[(timesEth.size / 20) * 19]} & ${timesBdb[(timesBdb.size / 20) * 19]} & ${timesDse[(timesDse.size / 20) * 19]} \\\\")
+    println("Max time of top 100% (\$\\mu\$s) & ${timesEth[timesEth.size - 1]} & ${timesBdb[timesBdb.size - 1]} & ${timesDse[timesDse.size -1]} \\\\")
 
     println("\\hline")
 
