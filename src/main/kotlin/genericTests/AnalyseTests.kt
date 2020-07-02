@@ -20,9 +20,10 @@ fun main() {
 }
 
 fun printForFileName(name: String, title: String) {
+    println("\\begin{table}")
     println("\\begin{tabular}{ |p{6cm}||p{2cm}|p{2cm}|p{2cm}|  }")
     println("\\hline")
-    println("\\multicolumn{4}{|c|}{$title} (Number of threads: ${TestInfo.threads}) \\\\")
+    println("\\multicolumn{4}{|c|}{$title (Number of threads: ${TestInfo.threads}) } \\\\")
     println("\\hline")
     println("&Ethereum&DSE& BigchainDB \\\\")
     println("\\hline")
@@ -65,4 +66,6 @@ fun printForFileName(name: String, title: String) {
     println("\\hline")
 
     println("\\end{tabular}")
+    println("\\label{table:${title.replace(' ', '_')}_${TestInfo.threads}}")
+    println("\\end{table}")
 }
