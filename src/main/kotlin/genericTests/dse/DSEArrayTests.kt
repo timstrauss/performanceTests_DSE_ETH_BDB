@@ -88,7 +88,7 @@ object DSEArrayTests {
     private class GetThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getArray", "dse") {
         override fun testFunc(): Boolean {
             return try {
-                session.execute("SELECT intvar FROM tim_space.genericsArray WHERE uuid = '$uuid' ALLOW FILTERING").all()
+                session.execute("SELECT intvar FROM tim_space.genericsArray WHERE uuid = '$uuid'").all()
                 true
             } catch (e: Exception) {
                 false
@@ -145,6 +145,8 @@ object DSEArrayTests {
             benchmarkFile.appendText(file.readText())
             file.delete()
         }
+
+        resetArrayTable(sessions[0], uuid)
 
         val getThreads = Array(workerThreads) {
             val thread = GetThread(time, sessions[it], it, workerThreads, uuid)
