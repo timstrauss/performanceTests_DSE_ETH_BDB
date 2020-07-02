@@ -46,7 +46,7 @@ fun printForFileName(name: String, title: String) {
     val timesBdb = LongArray(successBdb.size) {it -> successBdb[it].split("|")[0].toLong()}
     timesBdb.sort()
 
-    println("Number of transactions & ${timesEth.size} & ${timesBdb.size} & ${timesBdb.size} \\\\")
+    println("Number of transactions & ${timesEth.size} & ${timesBdb.size} & ${timesDse.size} \\\\")
     println("\\hline")
     println("\$\\varnothing\$ transaction time (rounded \$\\mu\$s) & ${timesEth.average().roundToInt()} & ${timesBdb.average().roundToInt()} & ${timesDse.average().roundToInt()} \\\\")
     println("\\hline")
