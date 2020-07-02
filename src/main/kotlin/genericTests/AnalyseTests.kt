@@ -5,17 +5,17 @@ package genericTests
 import java.io.File
 
 fun main() {
-    printForFileName("getString2", "Get String")
-    printForFileName("setString2", "Set String")
-    printForFileName("getBool2", "Get Bool")
-    printForFileName("setBool2", "Set Bool")
-    printForFileName("getInt2", "Get Integer")
-    printForFileName("setInt2", "Set Integer")
-    printForFileName("setBoolMapping2", "Set Mapping")
-    printForFileName("getBoolMapping2", "Get Mapping")
-    printForFileName("addArray2", "Add Array")
-    printForFileName("removeArray2", "Remove Array")
-    printForFileName("getArray2", "Get Array")
+    printForFileName("getString${TestInfo.threads}", "Get String")
+    printForFileName("setString${TestInfo.threads}", "Set String")
+    printForFileName("getBool${TestInfo.threads}", "Get Bool")
+    printForFileName("setBool${TestInfo.threads}", "Set Bool")
+    printForFileName("getInt${TestInfo.threads}", "Get Integer")
+    printForFileName("setInt${TestInfo.threads}", "Set Integer")
+    printForFileName("setBoolMapping${TestInfo.threads}", "Set Mapping")
+    printForFileName("getBoolMapping${TestInfo.threads}", "Get Mapping")
+    printForFileName("addArray${TestInfo.threads}", "Add Array")
+    printForFileName("removeArray${TestInfo.threads}", "Remove Array")
+    printForFileName("getArray${TestInfo.threads}", "Get Array")
 }
 
 fun printForFileName(name: String, title: String) {

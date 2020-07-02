@@ -3,7 +3,6 @@ package connectionDetails
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import genericTests.TestInfo
-import issuer.CassandraIssuer
 
 object CassandraUtils {
     val statemenBuilder = SimpleStatement.builder("")
@@ -13,20 +12,6 @@ object CassandraUtils {
         con.openSession()
         createUserAndKeySpace(con, username, password, replicationFactor.toLong())
         con.closeSession()
-        con = CassandraConnectionDetails(TestInfo.nodeHost, 9042,username, password)
-        con.openSession()
-        createInitialTables(con, username)
-        con.closeSession()
-    }
-
-    private fun createInitialTables(con: CassandraConnectionDetails, username: String) {
-        val spaceName = "\"" + getSpaceNameForUser(username) + "\""
-        val session = con.session()
-
-        buildAndExecuteStatement(session, "CREATE TABLE IF NOT EXISTS $spaceName.${CassandraIssuer.TableNames.ISSUERS_TABLE.tableName} (id text, domain text, sslpkey text, signed_address text, PRIMARY KEY(id));")
-        buildAndExecuteStatement(session, "CREATE TABLE IF NOT EXISTS $spaceName.${CassandraIssuer.TableNames.ISSUER_KEYS_TABLE.tableName} (issuer_id text, key text, valid_to timestamp, valid_from timestamp, name text, PRIMARY KEY(issuer_id, key));")
-        buildAndExecuteStatement(session, "CREATE TABLE IF NOT EXISTS $spaceName.${CassandraIssuer.TableNames.ISSUER_CUSTOM_REVOCATIONS.tableName} (issuer_id text, code_id int, code text, PRIMARY KEY(issuer_id, code_id));")
-        buildAndExecuteStatement(session, "CREATE TABLE IF NOT EXISTS $spaceName.${CassandraIssuer.TableNames.ISSUER_REVOKED_CREDENTIAL.tableName} (issuer_id text, credential_hash text, code_id int, PRIMARY KEY(issuer_id, credential_hash, code_id));")
     }
 
     private fun createUserAndKeySpace(con: CassandraConnectionDetails,
