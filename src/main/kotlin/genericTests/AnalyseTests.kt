@@ -47,20 +47,48 @@ fun printForFileName(name: String, title: String) {
     val timesBdb = LongArray(successBdb.size) {it -> successBdb[it].split("|")[0].toLong()}
     timesBdb.sort()
 
-    println("Number of transactions & ${timesEth.size} & ${timesBdb.size} & ${timesDse.size} \\\\")
+    println("Number of transactions & ${formatter(timesEth.size)} & ${formatter(timesBdb.size)} & ${formatter(timesDse.size)} \\\\")
     println("\\hline")
-    println("\$\\varnothing\$ transaction time (rounded \$\\mu\$s) & ${timesEth.average().roundToInt()} & ${timesBdb.average().roundToInt()} & ${timesDse.average().roundToInt()} \\\\")
+    println("\$\\varnothing\$ transaction time (rounded \$\\mu\$s) & ${formatter(timesEth.average().roundToInt())} & ${formatter(timesBdb.average().roundToInt())} & ${formatter(timesDse.average().roundToInt())} \\\\")
     println("\\hline")
-    println("Max time of top 10\\% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 1]} & ${timesBdb[(timesBdb.size / 10) * 1]} & ${timesDse[(timesDse.size / 10) * 1]} \\\\")
-    println("Max time of top 50\\% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 5]} & ${timesBdb[(timesBdb.size / 10) * 5]} & ${timesDse[(timesDse.size / 10) * 5]} \\\\")
-    println("Max time of top 80\\% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 8]} & ${timesBdb[(timesBdb.size / 10) * 8]} & ${timesDse[(timesDse.size / 10) * 8]} \\\\")
-    println("Max time of top 90\\% (\$\\mu\$s) & ${timesEth[(timesEth.size / 10) * 9]} & ${timesBdb[(timesBdb.size / 10) * 9]} & ${timesDse[(timesDse.size / 10) * 9]} \\\\")
-    println("Max time of top 95\\% (\$\\mu\$s) & ${timesEth[(timesEth.size / 20) * 19]} & ${timesBdb[(timesBdb.size / 20) * 19]} & ${timesDse[(timesDse.size / 20) * 19]} \\\\")
-    println("Max time of top 100\\% (\$\\mu\$s) & ${timesEth[timesEth.size - 1]} & ${timesBdb[timesBdb.size - 1]} & ${timesDse[timesDse.size -1]} \\\\")
+    println("Max time of top 10\\% (\$\\mu\$s) & ${formatter(timesEth[(timesEth.size / 10) * 1])} & ${formatter(timesBdb[(timesBdb.size / 10) * 1])} & ${formatter(timesDse[(timesDse.size / 10) * 1])} \\\\")
+    println("Max time of top 50\\% (\$\\mu\$s) & ${formatter(timesEth[(timesEth.size / 10) * 5])} & ${formatter(timesBdb[(timesBdb.size / 10) * 5])} & ${formatter(timesDse[(timesDse.size / 10) * 5])} \\\\")
+    println("Max time of top 80\\% (\$\\mu\$s) & ${formatter(timesEth[(timesEth.size / 10) * 8])} & ${formatter(timesBdb[(timesBdb.size / 10) * 8])} & ${formatter(timesDse[(timesDse.size / 10) * 8])} \\\\")
+    println("Max time of top 90\\% (\$\\mu\$s) & ${formatter(timesEth[(timesEth.size / 10) * 9])} & ${formatter(timesBdb[(timesBdb.size / 10) * 9])} & ${formatter(timesDse[(timesDse.size / 10) * 9])} \\\\")
+    println("Max time of top 95\\% (\$\\mu\$s) & ${formatter(timesEth[(timesEth.size / 20) * 19])} & ${formatter(timesBdb[(timesBdb.size / 20) * 19])} & ${formatter(timesDse[(timesDse.size / 20) * 19])} \\\\")
+    println("Max time of top 100\\% (\$\\mu\$s) & ${formatter(timesEth[timesEth.size - 1])} & ${formatter(timesBdb[timesBdb.size - 1])} & ${formatter(timesDse[timesDse.size -1])} \\\\")
 
     println("\\hline")
 
     println("\\end{tabular}")
     println("\\label{table:${title.replace(' ', '_')}_${TestInfo.threads}}")
     println("\\end{table}")
+}
+
+fun formatter(i: Int): String {
+    var num = i
+    var formatted = ""
+    while (num > 0) {
+        if (formatted == "") {
+            formatted = (num % 1000).toString()
+        } else {
+            formatted = "${num % 1000}," + formatted
+        }
+        num /= 1000
+    }
+    return formatted
+}
+
+fun formatter(i: Long): String {
+    var num = i
+    var formatted = ""
+    while (num > 0) {
+        if (formatted == "") {
+            formatted = (num % 1000).toString()
+        } else {
+            formatted = "${num % 1000}," + formatted
+        }
+        num /= 1000
+    }
+    return formatted
 }
