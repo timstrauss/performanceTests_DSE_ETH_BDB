@@ -100,7 +100,7 @@ object BDBBoolMappingTests {
                         )
                     ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false, HashMap::class.java
                 ) as HashMap<String, Boolean>
-                metadataValue["test${System.currentTimeMillis()}"] = this.setValue as Boolean
+                metadataValue["test2"] = this.setValue as Boolean
                 val fulFill = FulFill()
                 fulFill.outputIndex = 0
                 fulFill.transactionId = metadataId
