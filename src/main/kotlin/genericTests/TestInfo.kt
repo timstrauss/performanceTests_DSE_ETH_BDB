@@ -5,6 +5,6 @@ object TestInfo {
     val threads = 2
 
     fun getTimeToRun(): Long {
-        return 15L * 60 * 1000 * 1000 * 1000
+        return 10L * 60 * 1000 * 1000 * 1000
     }
 }
