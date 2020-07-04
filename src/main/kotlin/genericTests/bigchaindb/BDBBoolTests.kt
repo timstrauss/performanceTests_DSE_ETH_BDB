@@ -2,10 +2,13 @@ package genericTests.bigchaindb
 
 import com.bigchaindb.api.TransactionsApi
 import com.bigchaindb.builders.BigchainDbTransactionBuilder
+import com.bigchaindb.constants.BigchainDbApi
 import com.bigchaindb.constants.Operations
+import com.bigchaindb.model.BigChainDBGlobals
 import com.bigchaindb.model.FulFill
 import com.bigchaindb.model.GenericCallback
 import com.bigchaindb.model.MetaData
+import com.bigchaindb.util.NetworkUtils
 import com.google.gson.Gson
 import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
@@ -110,7 +113,8 @@ object BDBBoolTests {
                     if (transaction.id == metadataId) {
                         success = true
                     } else {
-                        TransactionsApi.sendTransaction(transaction, BDBCallBack {
+                        val body = RequestBody.create(BDBCallBack.JSON, transaction.toString())
+                        NetworkUtils.sendPostRequest(BigChainDBGlobals.getBaseUrl() + BigchainDbApi.TRANSACTIONS + "?mode=commit", body, BDBCallBack {
                             success = it
                         })
                     }
