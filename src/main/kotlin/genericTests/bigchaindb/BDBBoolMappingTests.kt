@@ -76,54 +76,58 @@ object BDBBoolMappingTests {
             success = null
             while (success != true) {
                 success = null
-                val db = mongoClient.getDatabase("bigchain")
-                val assetCollection = db.getCollection("assets")
-                val transactionsCollection = db.getCollection("transactions")
-                val metadataCollection = db.getCollection("metadata")
-                val assetId = assetCollection.find(
-                    Filters.and(
-                        BasicDBObject("data", BasicDBObject("property", "booolmappingvar")),
-                        BasicDBObject("data", BasicDBObject("uuid", uuid))
-                    )
-                ).limit(1).first()?.getString("id") ?: return false
-                val metadataId = transactionsCollection.find(
-                    BasicDBObject(
-                        "asset",
-                        BasicDBObject("id", assetId)
-                    )
-                ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
-                val metadataValue = gson.fromJson(
-                    (metadataCollection.find(
-                        BasicDBObject(
-                            "id",
-                            metadataId
+                try {
+                    val db = mongoClient.getDatabase("bigchain")
+                    val assetCollection = db.getCollection("assets")
+                    val transactionsCollection = db.getCollection("transactions")
+                    val metadataCollection = db.getCollection("metadata")
+                    val assetId = assetCollection.find(
+                        Filters.and(
+                            BasicDBObject("data", BasicDBObject("property", "booolmappingvar")),
+                            BasicDBObject("data", BasicDBObject("uuid", uuid))
                         )
-                    ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false, HashMap::class.java
-                ) as HashMap<String, Boolean>
-                metadataValue["test2"] = this.setValue as Boolean
-                val fulFill = FulFill()
-                fulFill.outputIndex = 0
-                fulFill.transactionId = metadataId
-                val tt: String? = null
-                val metadata = MetaData()
-                metadata.setMetaData("value", gson.toJson(metadataValue))
-                val transaction = BigchainDbTransactionBuilder
-                    .init()
-                    .addMetaData(metadata)
-                    .addAssets(assetId, String::class.java)
-                    .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
-                    .addOutput("1", con.keyPair.public as EdDSAPublicKey)
-                    .operation(Operations.TRANSFER)
-                    .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
-                if (transaction.id == metadataId) {
-                    success = true
-                } else {
-                    TransactionsApi.sendTransaction(transaction, BDBCallBack {
-                        success = it
-                    })
-                }
-                while (success == null) {
-                    sleep(0, 1)
+                    ).limit(1).first()?.getString("id") ?: return false
+                    val metadataId = transactionsCollection.find(
+                        BasicDBObject(
+                            "asset",
+                            BasicDBObject("id", assetId)
+                        )
+                    ).sort(BasicDBObject("\$natural", -1)).limit(1).first()?.getString("id") ?: assetId
+                    val metadataValue = gson.fromJson(
+                        (metadataCollection.find(
+                            BasicDBObject(
+                                "id",
+                                metadataId
+                            )
+                        ).limit(1).first()?.get("metadata") as Document?)?.getString("value") ?: return false,
+                        HashMap::class.java
+                    ) as HashMap<String, Boolean>
+                    metadataValue["test2"] = this.setValue as Boolean
+                    val fulFill = FulFill()
+                    fulFill.outputIndex = 0
+                    fulFill.transactionId = metadataId
+                    val tt: String? = null
+                    val metadata = MetaData()
+                    metadata.setMetaData("value", gson.toJson(metadataValue))
+                    val transaction = BigchainDbTransactionBuilder
+                        .init()
+                        .addMetaData(metadata)
+                        .addAssets(assetId, String::class.java)
+                        .addInput(tt, fulFill, con.keyPair.public as EdDSAPublicKey)
+                        .addOutput("1", con.keyPair.public as EdDSAPublicKey)
+                        .operation(Operations.TRANSFER)
+                        .buildAndSignOnly(con.keyPair.public as EdDSAPublicKey, con.keyPair.private as EdDSAPrivateKey)
+                    if (transaction.id == metadataId) {
+                        success = true
+                    } else {
+                        TransactionsApi.sendTransaction(transaction, BDBCallBack {
+                            success = it
+                        })
+                    }
+                    while (success == null) {
+                        sleep(0, 1)
+                    }
+                } catch (e: Exception) {
                 }
             }
 
