@@ -12,8 +12,10 @@ object DSEArrayTests {
         val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
         con.openSession()
         val uuid = UUID.randomUUID().toString()
-        con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
-        con.session().execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
+        con.session()
+            .execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
+        con.session()
+            .execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
         resetArrayTable(con.session(), uuid)
         val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/dse").mkdirs()
@@ -32,60 +34,83 @@ object DSEArrayTests {
         session.execute(batch)
     }
 
-    private class AddThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "addArray", "dse") {
+    private class AddThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String) :
+        TestThread(workerThreads, threadNum, time, true, "addArray", "dse") {
         var id: String? = null
 
         override fun testFunc(): Boolean {
             id = UUID.randomUUID().toString()
-            return try {
-                session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXISTS;").wasApplied()
-            } catch (e: Exception) { false }
+            var success = false
+            while (!success) {
+                try {
+                    session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXISTS;")
+                        .wasApplied()
+                    success = true
+                } catch (e: Exception) {
+                }
+            }
+            return true
         }
 
         override fun preaction() {
             if (lastSuccess && id != null) {
                 var success = false
-                while(!success) {
+                while (!success) {
                     try {
                         session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int} IF EXISTS;")
                         success = true
-                    } catch (e: Exception) {  }
+                    } catch (e: Exception) {
+                    }
                 }
             }
             setValue = (System.currentTimeMillis() % 2000).toInt() + 221
         }
     }
 
-    private class RemoveThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "removeArray", "dse") {
+    private class RemoveThread(
+        time: Long,
+        val session: CqlSession,
+        threadNum: Int,
+        workerThreads: Int,
+        val uuid: String
+    ) : TestThread(workerThreads, threadNum, time, true, "removeArray", "dse") {
         var id: UUID? = null
 
         override fun testFunc(): Boolean {
-            return try {
-                id = session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(0)
-                    ?: return false
-                session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int}  IF EXISTS;").wasApplied()
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
+            var success = false
+            while (!success) {
+                try {
+                    id =
+                        session.execute("SELECT id FROM tim_space.genericsArray WHERE uuid = '$uuid' AND intvar = ${setValue as Int} LIMIT 1;").one()?.getUuid(
+                            0
+                        )
+                            ?: return false
+                    session.execute("DELETE FROM tim_space.genericsArray WHERE id = $id AND uuid = '$uuid' AND intvar = ${setValue as Int}  IF EXISTS;")
+                        .wasApplied()
+                    success = true
+                } catch (e: Exception) {
+                }
             }
+            return true
         }
 
         override fun preaction() {
             if (lastSuccess) {
                 var success = false
-                while(!success) {
+                while (!success) {
                     try {
                         session.execute("INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES ($id, '$uuid', ${setValue as Int}) IF NOT EXISTS;")
                         success = true
-                    } catch (e: Exception) {  }
+                    } catch (e: Exception) {
+                    }
                 }
             }
             setValue = (System.currentTimeMillis() % 221).toInt()
         }
     }
 
-    private class GetThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, false, "getArray", "dse") {
+    private class GetThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String) :
+        TestThread(workerThreads, threadNum, time, false, "getArray", "dse") {
         override fun testFunc(): Boolean {
             return try {
                 session.execute("SELECT intvar FROM tim_space.genericsArray WHERE uuid = '$uuid'").all()
