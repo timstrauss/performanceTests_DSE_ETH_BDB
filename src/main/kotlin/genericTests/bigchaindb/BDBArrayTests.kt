@@ -139,6 +139,7 @@ object BDBArrayTests {
         }
 
         override fun preaction() {
+            sleep(100)
             success = null
             while (success != true && needReset) {
                 success = null
@@ -271,6 +272,7 @@ object BDBArrayTests {
         }
 
         override fun preaction() {
+            sleep(100)
             success = null
             while (success != true && needReset) {
                 success = null

@@ -129,6 +129,7 @@ object BDBIntTests {
         }
 
         override fun preaction() {
+            sleep(100)
             setValue = (System.currentTimeMillis() % 2000).toInt()
         }
     }

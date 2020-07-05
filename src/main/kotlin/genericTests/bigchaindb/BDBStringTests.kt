@@ -129,6 +129,7 @@ object BDBStringTests {
         }
 
         override fun preaction() {
+            sleep(100)
             setValue = "abcsd" + (System.currentTimeMillis() % 2000)
         }
     }

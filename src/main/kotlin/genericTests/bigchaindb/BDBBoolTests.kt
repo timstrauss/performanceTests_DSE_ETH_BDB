@@ -128,6 +128,7 @@ object BDBBoolTests {
         }
 
         override fun preaction() {
+            sleep(100)
             setValue = (System.currentTimeMillis() % 2) == 0L
         }
     }
