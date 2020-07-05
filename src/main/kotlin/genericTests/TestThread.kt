@@ -32,7 +32,7 @@ open class TestThread(val workerThreads: Int, val threadNum: Int, var time: Long
         setReset(true)
         lastSuccess = successFirst
         setText("${(transactionEndFirst - transactionStartFirst) / 1000}|$threadNum|${(transactionStartFirst / 1000) - creation}|${successFirst.toInt()}", false)
-        time -= ((transactionEndFirst - transactionStartFirst) / 1000000).toInt()
+        time -= (transactionEndFirst - transactionStartFirst)
         while(0 < time) {
             if (setTest) {
                 preaction()
