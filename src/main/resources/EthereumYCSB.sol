@@ -52,13 +52,4 @@ contract EthereumYCSB {
             fields[updateFields[i]] = updateValues[i];
         }
     }
-
-    function test() public view returns(uint256) {
-        return possibleFields.length;
-    }
-
-    function test2() public view returns(uint256) {
-        revert("hm");
-        return 2;
-    }
 }
