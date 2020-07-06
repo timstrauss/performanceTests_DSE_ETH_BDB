@@ -16,20 +16,31 @@ contract EthereumYCSB {
     }
 
     function getField(string[] memory selectFields) public view returns(string[] memory) {
-        string[] memory values = new string[](selectFields.length);
+        string[] memory values = new string[](selectFields.length + 1);
+        values[0] = "dummy";
 
         for (uint i = 0; i < selectFields.length; i++) {
-            values[i] = fields[selectFields[i]];
+            values[i+1] = fields[selectFields[i]];
+        }
+
+        return values;
+    }
+
+    function getFieldNames() public view returns(string[] memory) {
+        string[] memory values = new string[](possibleFields.length + 1);
+        values[0] = "dummy";
+        for (uint i = 0; i < possibleFields.length; i++) {
+            values[i + 1] = possibleFields[i];
         }
 
         return values;
     }
 
     function getField() public view returns(string[] memory) {
-        string[] memory values = new string[](possibleFields.length);
-
+        string[] memory values = new string[](possibleFields.length + 1);
+        values[0] = "dummy";
         for (uint i = 0; i < possibleFields.length; i++) {
-            values[i] = fields[possibleFields[i]];
+            values[i + 1] = fields[possibleFields[i]];
         }
 
         return values;
@@ -40,5 +51,14 @@ contract EthereumYCSB {
         for (uint i = 0; i < updateFields.length; i++) {
             fields[updateFields[i]] = updateValues[i];
         }
+    }
+
+    function test() public view returns(uint256) {
+        return possibleFields.length;
+    }
+
+    function test2() public view returns(uint256) {
+        revert("hm");
+        return 2;
     }
 }

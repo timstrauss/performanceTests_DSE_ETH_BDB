@@ -11,27 +11,31 @@ object DSEArrayTests {
     fun run(threads: Int) {
         val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
         con.openSession()
-        val uuid = UUID.randomUUID().toString()
-        con.session()
-            .execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
-        con.session()
-            .execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
-        resetArrayTable(con.session(), uuid)
+        val uuids = mutableListOf<String>()
+        for (i in 0 until threads) {
+            val uuid = UUID.randomUUID().toString()
+            con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
+            con.session().execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
+            uuids.add(uuid)
+        }
+        resetArrayTable(con.session(), uuids)
         val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
-        executeTests(threads, timePerTest, uuid)
+        executeTests(threads, timePerTest, uuids)
     }
 
-    private fun resetArrayTable(session: CqlSession, uuid: String) {
-        session.execute("TRUNCATE tim_space.genericsArray;")
-        var batch = "BEGIN BATCH\n"
-        for (i in 0 until 221) {
-            batch += "INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', $i);\n"
+    private fun resetArrayTable(session: CqlSession, uuids: List<String>) {
+        for (uuid in uuids) {
+            session.execute("TRUNCATE tim_space.genericsArray;")
+            var batch = "BEGIN BATCH\n"
+            for (i in 0 until 221) {
+                batch += "INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', $i);\n"
+            }
+            batch += "APPLY BATCH;"
+            session.execute(batch)
         }
-        batch += "APPLY BATCH;"
-        session.execute(batch)
     }
 
     private class AddThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String) :
@@ -122,14 +126,18 @@ object DSEArrayTests {
         }
     }
 
-    private fun executeTests(workerThreads: Int, time: Long, uuid: String) {
+    private fun executeTests(workerThreads: Int, time: Long, uuid: List<String>) {
         val sessions = Array(workerThreads) {
             val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
             con.openSession()
             con.session()
         }
         val setThreads = Array(workerThreads) {
-            val thread = AddThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = if (TestInfo.sameResource) {
+                AddThread(time, sessions[it], it, workerThreads, uuid[0])
+            } else {
+                AddThread(time, sessions[it], it, workerThreads, uuid[it])
+            }
             thread.start()
             thread
         }
@@ -151,7 +159,11 @@ object DSEArrayTests {
         }
 
         val removeThreads = Array(workerThreads) {
-            val thread = RemoveThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = if (TestInfo.sameResource) {
+                RemoveThread(time, sessions[it], it, workerThreads, uuid[0])
+            } else {
+                RemoveThread(time, sessions[it], it, workerThreads, uuid[it])
+            }
             thread.start()
             thread
         }
@@ -175,7 +187,11 @@ object DSEArrayTests {
         resetArrayTable(sessions[0], uuid)
 
         val getThreads = Array(workerThreads) {
-            val thread = GetThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = if (TestInfo.sameResource) {
+                GetThread(time, sessions[it], it, workerThreads, uuid[0])
+            } else {
+                GetThread(time, sessions[it], it, workerThreads, uuid[it])
+            }
             thread.start()
             thread
         }

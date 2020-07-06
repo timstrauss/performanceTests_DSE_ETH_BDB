@@ -11,25 +11,31 @@ object DSEBoolTests {
     fun run(threads: Int) {
         val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
         con.openSession()
-        val uuid = UUID.randomUUID().toString()
-        con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
-        con.session().execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
-        resetArrayTable(con.session(), uuid)
+        val uuids = mutableListOf<String>()
+        for (i in 0 until threads) {
+            val uuid = UUID.randomUUID().toString()
+            con.session().execute("INSERT INTO tim_space.generics (uuid, boolvar, intvar, stringvar) VALUES ('$uuid', true, 3, 'test');")
+            con.session().execute("INSERT INTO tim_space.genericsMapping (uuid, boolvar, stringvar) VALUES ('$uuid', true, 'test');")
+            uuids.add(uuid)
+        }
+        resetArrayTable(con.session(), uuids)
         val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/dse").mkdirs()
         Thread.sleep(1000)
         con.closeSession()
-        executeBoolTests(threads, timePerTest, uuid)
+        executeBoolTests(threads, timePerTest, uuids)
     }
 
-    private fun resetArrayTable(session: CqlSession, uuid: String) {
-        session.execute("TRUNCATE tim_space.genericsArray;")
-        var batch = "BEGIN BATCH\n"
-        for (i in 0 until 221) {
-            batch += "INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', $i);\n"
+    private fun resetArrayTable(session: CqlSession, uuids: List<String>) {
+        for (uuid in uuids) {
+            session.execute("TRUNCATE tim_space.genericsArray;")
+            var batch = "BEGIN BATCH\n"
+            for (i in 0 until 221) {
+                batch += "INSERT INTO tim_space.genericsArray (id, uuid, intvar) VALUES (now(), '$uuid', $i);\n"
+            }
+            batch += "APPLY BATCH;"
+            session.execute(batch)
         }
-        batch += "APPLY BATCH;"
-        session.execute(batch)
     }
 
     private class SetBoolThread(time: Long, val session: CqlSession, threadNum: Int, workerThreads: Int, val uuid: String): TestThread(workerThreads, threadNum, time, true, "setBool", "dse") {
@@ -53,14 +59,18 @@ object DSEBoolTests {
         }
     }
 
-    private fun executeBoolTests(workerThreads: Int, time: Long, uuid: String) {
+    private fun executeBoolTests(workerThreads: Int, time: Long, uuid: List<String>) {
         val sessions = Array(workerThreads) {
             val con = CassandraConnectionDetails(TestInfo.nodeHost, 9042, "tim", "abc")
             con.openSession()
             con.session()
         }
         val setThreads = Array(workerThreads) {
-            val thread = SetBoolThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = if (TestInfo.sameResource) {
+                SetBoolThread(time, sessions[it], it, workerThreads, uuid[0])
+            } else {
+                SetBoolThread(time, sessions[it], it, workerThreads, uuid[it])
+            }
             thread.start()
             thread
         }
@@ -82,7 +92,11 @@ object DSEBoolTests {
         }
 
         val getThreads = Array(workerThreads) {
-            val thread = GetBoolThread(time, sessions[it], it, workerThreads, uuid)
+            val thread = if (TestInfo.sameResource) {
+                GetBoolThread(time, sessions[it], it, workerThreads, uuid[0])
+            } else {
+                GetBoolThread(time, sessions[it], it, workerThreads, uuid[it])
+            }
             thread.start()
             thread
         }

@@ -29,40 +29,44 @@ object BDBIntTests {
 
     fun run(threads: Int) {
         val con = BigchainDBConnectionDetails("http://${TestInfo.nodeHost}:9984")
-        val uuid = UUID.randomUUID().toString()
         val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/bdb").mkdirs()
-        var assetData = TreeMap<String, String>()
-        assetData["uuid"] = uuid
-        assetData["property"] = "stringvar"
-        var metadata = MetaData()
-        metadata.setMetaData("value", "test")
-        con.sendCreateTransaction(assetData, metadata)
-        assetData = TreeMap<String, String>()
-        assetData["uuid"] = uuid
-        assetData["property"] = "intvar"
-        metadata = MetaData()
-        metadata.setMetaData("value", "3")
-        con.sendCreateTransaction(assetData, metadata)
-        assetData = TreeMap<String, String>()
-        assetData["uuid"] = uuid
-        assetData["property"] = "boolvar"
-        metadata = MetaData()
-        metadata.setMetaData("value", "true")
-        con.sendCreateTransaction(assetData, metadata)
-        assetData = TreeMap<String, String>()
-        assetData["uuid"] = uuid
-        assetData["property"] = "arrayvar"
-        metadata = MetaData()
-        metadata.setMetaData("value", gson.toJson(IntArray(0)))
-        con.sendCreateTransaction(assetData, metadata)
-        assetData = TreeMap<String, String>()
-        assetData["uuid"] = uuid
-        assetData["property"] = "booolmappingvar"
-        metadata = MetaData()
-        metadata.setMetaData("value", gson.toJson(HashMap<String, Boolean>(mutableMapOf(Pair("test", true)))))
-        con.sendCreateTransaction(assetData, metadata)
-        executeTests(threads, timePerTest, uuid, con)
+        val uuids = mutableListOf<String>()
+        for (i in 0 until threads) {
+            val uuid = UUID.randomUUID().toString()
+            uuids.add(uuid)
+            var assetData = TreeMap<String, String>()
+            assetData["uuid"] = uuid
+            assetData["property"] = "stringvar"
+            var metadata = MetaData()
+            metadata.setMetaData("value", "test")
+            con.sendCreateTransaction(assetData, metadata)
+            assetData = TreeMap<String, String>()
+            assetData["uuid"] = uuid
+            assetData["property"] = "intvar"
+            metadata = MetaData()
+            metadata.setMetaData("value", "3")
+            con.sendCreateTransaction(assetData, metadata)
+            assetData = TreeMap<String, String>()
+            assetData["uuid"] = uuid
+            assetData["property"] = "boolvar"
+            metadata = MetaData()
+            metadata.setMetaData("value", "true")
+            con.sendCreateTransaction(assetData, metadata)
+            assetData = TreeMap<String, String>()
+            assetData["uuid"] = uuid
+            assetData["property"] = "arrayvar"
+            metadata = MetaData()
+            metadata.setMetaData("value", gson.toJson(IntArray(0)))
+            con.sendCreateTransaction(assetData, metadata)
+            assetData = TreeMap<String, String>()
+            assetData["uuid"] = uuid
+            assetData["property"] = "booolmappingvar"
+            metadata = MetaData()
+            metadata.setMetaData("value", gson.toJson(HashMap<String, Boolean>(mutableMapOf(Pair("test", true)))))
+            con.sendCreateTransaction(assetData, metadata)
+        }
+        executeTests(threads, timePerTest, uuids, con)
     }
 
     private class SetIntThread(
@@ -169,9 +173,13 @@ object BDBIntTests {
         }
     }
 
-    private fun executeTests(workerThreads: Int, time: Long, uuid: String, con: BigchainDBConnectionDetails) {
+    private fun executeTests(workerThreads: Int, time: Long, uuids: List<String>, con: BigchainDBConnectionDetails) {
         val setThreads = Array(workerThreads) {
-            val thread = SetIntThread(time, it, workerThreads, uuid, con)
+            val thread = if (TestInfo.sameResource) {
+                SetIntThread(time, it, workerThreads, uuids[0], con)
+            } else {
+                SetIntThread(time, it, workerThreads, uuids[it], con)
+            }
             thread.start()
             thread
         }
@@ -193,7 +201,11 @@ object BDBIntTests {
         }
 
         val getThreads = Array(workerThreads) {
-            val thread = GetIntThread(time, it, workerThreads, uuid, con)
+            val thread = if (TestInfo.sameResource) {
+                GetIntThread(time, it, workerThreads, uuids[0], con)
+            } else {
+                GetIntThread(time, it, workerThreads, uuids[it], con)
+            }
             thread.start()
             thread
         }
