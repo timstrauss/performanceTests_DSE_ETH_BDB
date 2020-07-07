@@ -51,9 +51,9 @@ object EthereumIntTests {
         val generics = Array<Generic>(workerThreads) {
             val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
             if (TestInfo.sameResource) {
-                Generic.load(generic[0], con.web3j, con.credentials, EthereumContractGasProvider())
+                Generic.load(generic[0], con.web3j, TestInfo.getEthTransactionManager(con.web3j, con.credentials), EthereumContractGasProvider())
             } else {
-                Generic.load(generic[it], con.web3j, con.credentials, EthereumContractGasProvider())
+                Generic.load(generic[it], con.web3j, TestInfo.getEthTransactionManager(con.web3j, con.credentials), EthereumContractGasProvider())
             }
         }
         val setThreads = Array(workerThreads) {

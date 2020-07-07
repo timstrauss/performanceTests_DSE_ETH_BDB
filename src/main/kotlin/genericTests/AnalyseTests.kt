@@ -14,13 +14,13 @@ fun main() {
     printForFileName("setInt${TestInfo.threads}", "Set Integer")
     printForFileName("setBoolMapping${TestInfo.threads}", "Set Mapping")
     printForFileName("getBoolMapping${TestInfo.threads}", "Get Mapping")
-    printForFileName("addArray${TestInfo.threads}", "Add Array")
-    printForFileName("removeArray${TestInfo.threads}", "Remove Array")
+    printForFileName("addArray${TestInfo.threads}", "Add Element to Array")
+    printForFileName("removeArray${TestInfo.threads}", "Remove Element from Array")
     printForFileName("getArray${TestInfo.threads}", "Get Array")
 }
 
 fun printForFileName(name: String, title: String) {
-    println("\\begin{table}")
+    println("\\begin{table}[H]")
     println("\\begin{tabular}{ |p{6cm}||p{2cm}|p{2cm}|p{2cm}|  }")
     println("\\hline")
     println("\\multicolumn{4}{|c|}{$title (Number of threads: ${TestInfo.threads}) } \\\\")
