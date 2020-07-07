@@ -9,12 +9,7 @@ import java.io.File
 import java.math.BigInteger
 
 object EthereumArrayTests {
-    fun run(threads: Int) {
-        val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
-        val generics = mutableListOf<String>()
-        for (i in 0 until threads) {
-            generics.add(Generic.deploy(con.web3j, con.credentials, EthereumContractGasProvider()).send().contractAddress)
-        }
+    fun run(threads: Int, generics: List<String>) {
         val timePerTest = TestInfo.getTimeToRun()
         val t = File("./benchmarks/ethereum").mkdirs()
 
