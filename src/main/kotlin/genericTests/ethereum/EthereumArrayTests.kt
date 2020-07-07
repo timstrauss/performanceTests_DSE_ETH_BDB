@@ -23,17 +23,29 @@ object EthereumArrayTests {
 
     private class AddThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "addArray", "ethereum") {
         override fun testFunc(): Boolean {
-            return try {
-                generic.addInt(setValue as BigInteger).send()
-                true
-            } catch (e: Exception) {
-                false
+            var success = false
+            while (!success) {
+                return try {
+                    generic.addInt(setValue as BigInteger).send()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
             }
+            return true
         }
 
         override fun preaction() {
             if (lastSuccess) {
-                generic.removeInt(setValue as BigInteger).send()
+                var success = false
+                while (!success) {
+                    return try {
+                        generic.removeInt(setValue as BigInteger).send()
+                        success = true
+                    } catch (e: Exception) {
+                        success = false
+                    }
+                }
             }
             setValue = BigInteger.valueOf((System.currentTimeMillis() % 2000) + 221)
         }
@@ -41,17 +53,29 @@ object EthereumArrayTests {
 
     private class RemoveThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "removeArray", "ethereum") {
         override fun testFunc(): Boolean {
-            return try {
-                generic.removeInt(setValue as BigInteger).send()
-                true
-            } catch (e: Exception) {
-                false
+            var success = false
+            while (!success) {
+                try {
+                    generic.removeInt(setValue as BigInteger).send()
+                    success = true
+                } catch (e: Exception) {
+                    success = false
+                }
             }
+            return true
         }
 
         override fun preaction() {
             if (lastSuccess) {
-                generic.addInt(setValue as BigInteger).send()
+                var success = false
+                while (!success) {
+                    return try {
+                        generic.addInt(setValue as BigInteger).send()
+                        success = true
+                    } catch (e: Exception) {
+                        success = false
+                    }
+                }
             }
             setValue = BigInteger.valueOf(System.currentTimeMillis() % 221)
         }

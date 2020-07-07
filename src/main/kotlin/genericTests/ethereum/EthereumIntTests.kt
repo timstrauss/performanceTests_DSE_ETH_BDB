@@ -23,12 +23,16 @@ object EthereumIntTests {
 
     private class SetThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setInt", "ethereum") {
         override fun testFunc(): Boolean {
-            return try {
-                generic.setInt(setValue as BigInteger).send()
-                true
-            } catch (e: Exception) {
-                false
+            var success = false
+            while (!success) {
+                try {
+                    generic.setInt(setValue as BigInteger).send()
+                    success = true
+                } catch (e: Exception) {
+                    success = false
+                }
             }
+            return true
         }
 
         override fun preaction() {

@@ -22,12 +22,16 @@ object EthereumBoolMappingTests {
 
     private class SetThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBoolMapping", "ethereum") {
         override fun testFunc(): Boolean {
-            return try {
-                generic.setBoolFor("test2}", setValue as Boolean).send()
-                true
-            } catch (e: Exception) {
-                false
+            var success = false
+            while (!success) {
+                try {
+                    generic.setBoolFor("test2}", setValue as Boolean).send()
+                    success = true
+                } catch (e: Exception) {
+                    success = false
+                }
             }
+            return true
         }
 
         override fun preaction() {
