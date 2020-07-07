@@ -11,7 +11,7 @@ fun main() {
     val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
     val generics = mutableListOf<String>()
     for (i in 0 until TestInfo.threads) {
-        generics.add(Generic.deploy(con.web3j, con.credentials, EthereumContractGasProvider()).send().contractAddress)
+        generics.add(Generic.deploy(con.web3j, TestInfo.getEthTransactionManager(con.web3j, con.credentials), EthereumContractGasProvider()).send().contractAddress)
     }
     EthereumBoolTests.run(TestInfo.threads, generics)
     println("bool done")
