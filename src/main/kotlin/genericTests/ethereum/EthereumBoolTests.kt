@@ -29,13 +29,6 @@ object EthereumBoolTests {
                     generic.setBool(setValue as Boolean).send()
                     success = true
                 } catch (e: Exception) {
-                    e.printStackTrace()
-                    Generic.load(
-                        generic.contractAddress,
-                        con.web3j,
-                        TestInfo.getEthTransactionManager(con.web3j, con.credentials),
-                        EthereumContractGasProvider()
-                    )
                     success = false
                 }
             }

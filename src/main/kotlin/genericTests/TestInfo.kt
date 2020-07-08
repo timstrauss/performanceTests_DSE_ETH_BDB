@@ -15,9 +15,9 @@ object TestInfo {
         return 10L * 60 * 1000 * 1000 * 1000
     }
 
-    val pollingIntervalEthereum = 10L
+    val pollingIntervalEthereum = 200L
 
     fun getEthTransactionManager(web3j: Web3j, credentials: Credentials): RawTransactionManager {
-        return RawTransactionManager(web3j, credentials, 1515L, 1500, pollingIntervalEthereum)
+        return RawTransactionManager(web3j, credentials, 1515L, 100, pollingIntervalEthereum)
     }
 }
