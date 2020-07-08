@@ -20,11 +20,11 @@ object EthereumArrayTests {
         override fun testFunc(): Boolean {
             var success = false
             while (!success) {
-                return try {
+                try {
                     generic.addInt(setValue as BigInteger).send()
-                    true
+                    success = true
                 } catch (e: Exception) {
-                    false
+                    success = false
                 }
             }
             return true
