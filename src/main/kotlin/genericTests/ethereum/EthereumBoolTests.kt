@@ -15,7 +15,13 @@ object EthereumBoolTests {
         executeBoolTests(threads, timePerTest, generics)
     }
 
-    private class SetBoolThread(time: Long, val generic: Generic, threadNum: Int, workerThreads: Int): TestThread(workerThreads, threadNum, time, true, "setBool", "ethereum") {
+    private class SetBoolThread(
+        time: Long,
+        var generic: Generic,
+        threadNum: Int,
+        workerThreads: Int,
+        val con: EthereumConnectionDetails
+    ): TestThread(workerThreads, threadNum, time, true, "setBool", "ethereum") {
         override fun testFunc(): Boolean {
             var success = false
             while (!success) {
@@ -23,6 +29,13 @@ object EthereumBoolTests {
                     generic.setBool(setValue as Boolean).send()
                     success = true
                 } catch (e: Exception) {
+                    e.printStackTrace()
+                    Generic.load(
+                        generic.contractAddress,
+                        con.web3j,
+                        TestInfo.getEthTransactionManager(con.web3j, con.credentials),
+                        EthereumContractGasProvider()
+                    )
                     success = false
                 }
             }
@@ -46,8 +59,8 @@ object EthereumBoolTests {
     }
 
     private fun executeBoolTests(workerThreads: Int, time: Long, generic: List<String>) {
+        val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
         val generics = Array<Generic>(workerThreads) {
-            val con = EthereumConnectionDetails("http://${TestInfo.nodeHost}:8545")
             if (TestInfo.sameResource) {
                 Generic.load(
                     generic[0],
@@ -65,7 +78,7 @@ object EthereumBoolTests {
             }
         }
         val setThreads = Array(workerThreads) {
-            val thread = SetBoolThread(time, generics[it], it, workerThreads)
+            val thread = SetBoolThread(time, generics[it], it, workerThreads, con)
             thread.start()
             thread
         }
