@@ -16,14 +16,14 @@ fun main() {
         generics.add(contract.contractAddress)
         contract.setInts(MutableList(221) { BigInteger.valueOf(it.toLong()) })
     }
- /*   EthereumBoolTests.run(TestInfo.threads, generics)
+    EthereumBoolTests.run(TestInfo.threads, generics)
     println("bool done")
     EthereumIntTests.run(TestInfo.threads, generics)
     println("int done")
     EthereumStringTests.run(TestInfo.threads, generics)
     println("string done")
     EthereumBoolMappingTests.run(TestInfo.threads, generics)
-    println("mapping done")*/
+    println("mapping done")
     EthereumArrayTests.run(TestInfo.threads, generics)
     println("array done")
 }

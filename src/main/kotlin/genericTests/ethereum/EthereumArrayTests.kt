@@ -5,6 +5,7 @@ import connectionDetails.EthereumContractGasProvider
 import de.hpi.cc.datasource.decentralized.ethereum.smartcontracts.Generic
 import genericTests.TestThread
 import genericTests.TestInfo
+import org.web3j.tx.ReadonlyTransactionManager
 import java.io.File
 import java.math.BigInteger
 
