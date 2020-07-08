@@ -35,7 +35,7 @@ object EthereumArrayTests {
                 var success = false
                 while (!success) {
                     try {
-                        generic.removeInt(setValue as BigInteger).send()
+                        generic.setInts(MutableList(221) { BigInteger.valueOf(it.toLong()) }).send()
                         success = true
                     } catch (e: Exception) {
                         success = false
@@ -65,7 +65,7 @@ object EthereumArrayTests {
                 var success = false
                 while (!success) {
                     try {
-                        generic.addInt(setValue as BigInteger).send()
+                        generic.setInts(MutableList(221) { BigInteger.valueOf(it.toLong()) }).send()
                         success = true
                     } catch (e: Exception) {
                         success = false
