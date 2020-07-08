@@ -34,7 +34,7 @@ object EthereumArrayTests {
             if (lastSuccess) {
                 var success = false
                 while (!success) {
-                    return try {
+                    try {
                         generic.removeInt(setValue as BigInteger).send()
                         success = true
                     } catch (e: Exception) {
@@ -64,7 +64,7 @@ object EthereumArrayTests {
             if (lastSuccess) {
                 var success = false
                 while (!success) {
-                    return try {
+                    try {
                         generic.addInt(setValue as BigInteger).send()
                         success = true
                     } catch (e: Exception) {
