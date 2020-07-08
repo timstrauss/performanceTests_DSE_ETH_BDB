@@ -33,7 +33,7 @@ object EthereumArrayTests {
         override fun preaction() {
             if (lastSuccess) {
                 var success = false
-                while (!success) {
+                while (!success && generic.ints.send().size > 442) {
                     try {
                         generic.setInts(MutableList(221) { BigInteger.valueOf(it.toLong()) }).send()
                         success = true
@@ -63,7 +63,7 @@ object EthereumArrayTests {
         override fun preaction() {
             if (lastSuccess) {
                 var success = false
-                while (!success) {
+                while (!success && generic.ints.send().size > 442) {
                     try {
                         generic.setInts(MutableList(221) { BigInteger.valueOf(it.toLong()) }).send()
                         success = true
