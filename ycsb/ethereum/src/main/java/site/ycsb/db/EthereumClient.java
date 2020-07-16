@@ -6,14 +6,17 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.RawTransactionManager;
 import site.ycsb.*;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class EthereumClient extends DB {
   private Web3j client;
@@ -23,28 +26,36 @@ public class EthereumClient extends DB {
   private static Map<String, EthereumYCSB> contractCache = new HashMap<>();
   private Gson gson = new Gson();
   private File mappingFile;
+  private static final boolean retry = false;
+
+  AtomicBoolean doOnce = new AtomicBoolean(false);
 
   @Override
   public void init() throws DBException {
     try {
       mappingFile = new File("./keymapping");
       if (!mappingFile.exists()) {
-        mappingFile.createNewFile();
-        FileWriter fw = new FileWriter(mappingFile.getPath());
-        fw.write(gson.toJson(new HashMap<String, String>()));
-        fw.close();
-      } else {
-        StringBuilder fileData = new StringBuilder();
-        Scanner myReader = new Scanner(mappingFile);
-        while (myReader.hasNextLine()) {
-          String data = myReader.nextLine();
-          fileData.append(data);
+        if (!doOnce.getAndSet(true)) {
+          mappingFile.createNewFile();
+          FileWriter fw = new FileWriter(mappingFile.getPath());
+          fw.write(gson.toJson(new HashMap<String, String>()));
+          fw.close();
+          keyMapping = new ConcurrentHashMap<>();
         }
-        myReader.close();
-        keyMapping = gson.fromJson(fileData.toString(), HashMap.class);
+      } else {
+        if (!doOnce.getAndSet(true)) {
+          StringBuilder fileData = new StringBuilder();
+          Scanner myReader = new Scanner(mappingFile);
+          while (myReader.hasNextLine()) {
+            String data = myReader.nextLine();
+            fileData.append(data);
+          }
+          myReader.close();
+          keyMapping = gson.fromJson(fileData.toString(), ConcurrentHashMap.class);
+        }
       }
 
-      client = Web3j.build(new HttpService("http://127.0.0.1:8545"));
+      client = Web3j.build(new HttpService("http://172.20.8.223:8545"));
       ECKeyPair keyPair = Keys.createEcKeyPair();
       credentials = Credentials.create(keyPair);
     } catch (Exception e) {
@@ -55,14 +66,6 @@ public class EthereumClient extends DB {
 
   private synchronized void addKey(String key, String id) {
     try {
-      StringBuilder fileData = new StringBuilder();
-      Scanner myReader = new Scanner(mappingFile);
-      while (myReader.hasNextLine()) {
-        String data = myReader.nextLine();
-        fileData.append(data);
-      }
-      myReader.close();
-      keyMapping = gson.fromJson(fileData.toString(), HashMap.class);
       keyMapping.put(key, id);
       FileWriter fw = new FileWriter(mappingFile.getPath());
       fw.write(gson.toJson(keyMapping));
@@ -74,37 +77,41 @@ public class EthereumClient extends DB {
 
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
-    try {
-      String address = keyMapping.get(key);
-      EthereumYCSB contract;
-      if (!contractCache.containsKey(address)) {
-        contract = EthereumYCSB.load(address, client, credentials, gasProvider);
-        contractCache.put(address, contract);
-      } else {
-        contract = contractCache.get(address);
+    Status resultSuccess = null;
+    while (resultSuccess == null || (resultSuccess != Status.OK && retry)) {
+      try {
+        String address = keyMapping.get(key);
+        EthereumYCSB contract;
+        if (!contractCache.containsKey(address)) {
+          contract = EthereumYCSB.load(address, client, new RawTransactionManager(client, credentials, 1515L, 150, 100), gasProvider);
+          contractCache.put(address, contract);
+        } else {
+          contract = contractCache.get(address);
+        }
+        if (fields == null) {
+          List<String> names = contract.getFieldNames().send();
+          names.remove(0);
+          List<String> values = contract.getField().send();
+          values.remove(0);
+          for (int i = 0; i < names.size(); i++) {
+            result.put(names.get(i), new StringByteIterator(values.get(i)));
+          }
+        } else {
+          List<String> names = new ArrayList<>();
+          for (String field : fields) {
+            names.add(field);
+          }
+          List<String> values = contract.getField(names).send();
+          for (int i = 0; i < names.size(); i++) {
+            result.put(names.get(i), new StringByteIterator(values.get(i)));
+          }
+        }
+        resultSuccess = Status.OK;
+      } catch (Exception e) {
+        resultSuccess = Status.ERROR;
       }
-      if (fields == null) {
-        List<String> names = contract.getFieldNames().send();
-        names.remove(0);
-        List<String> values = contract.getField().send();
-        values.remove(0);
-        for (int i = 0; i < names.size(); i++) {
-          result.put(names.get(i), new StringByteIterator(values.get(i)));
-        }
-      } else {
-        List<String> names = new ArrayList<>();
-        for (String field : fields) {
-          names.add(field);
-        }
-        List<String> values = contract.getField(names).send();
-        for (int i = 0; i < names.size(); i++) {
-          result.put(names.get(i), new StringByteIterator(values.get(i)));
-        }
-      }
-      return Status.OK;
-    } catch (Exception e) {
-      return Status.ERROR;
     }
+    return resultSuccess;
   }
 
   @Override
@@ -114,26 +121,30 @@ public class EthereumClient extends DB {
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
-    try {
-      String address = keyMapping.get(key);
-      EthereumYCSB contract;
-      if (!contractCache.containsKey(address)) {
-        contract = EthereumYCSB.load(address, client, credentials, gasProvider);
-        contractCache.put(address, contract);
-      } else {
-        contract = contractCache.get(address);
+    Status resultSuccess = null;
+    while (resultSuccess == null || (resultSuccess != Status.OK && retry)) {
+      try {
+        String address = keyMapping.get(key);
+        EthereumYCSB contract;
+        if (!contractCache.containsKey(address)) {
+          contract = EthereumYCSB.load(address, client, new RawTransactionManager(client, credentials, 1515L, 150, 100), gasProvider);
+          contractCache.put(address, contract);
+        } else {
+          contract = contractCache.get(address);
+        }
+        List<String> fields = new ArrayList<>();
+        List<String> fieldValues = new ArrayList<>();
+        for (String field : values.keySet()) {
+          fields.add(field);
+          fieldValues.add(values.get(field).toString());
+        }
+        contract.setValues(fields, fieldValues).send();
+        resultSuccess = Status.OK;
+      } catch (Exception e) {
+        resultSuccess = Status.ERROR;
       }
-      List<String> fields = new ArrayList<>();
-      List<String> fieldValues = new ArrayList<>();
-      for (String field : values.keySet()) {
-        fields.add(field);
-        fieldValues.add(values.get(field).toString());
-      }
-      contract.setValues(fields, fieldValues).send();
-      return Status.OK;
-    } catch (Exception e) {
-      return Status.ERROR;
     }
+    return resultSuccess;
   }
 
   @Override
@@ -144,13 +155,17 @@ public class EthereumClient extends DB {
       keys.add(keyInValues);
       valuesOfKeys.add(values.get(keyInValues).toString());
     }
-    try {
-      EthereumYCSB entity = EthereumYCSB.deploy(client, credentials, gasProvider, keys, valuesOfKeys).send();
-      addKey(key, entity.getContractAddress());
-    } catch (Exception e) {
-      return Status.ERROR;
+    Status resultSuccess = null;
+    while (resultSuccess == null || (resultSuccess != Status.OK && retry)) {
+      try {
+        EthereumYCSB entity = EthereumYCSB.deploy(client, new RawTransactionManager(client, credentials, 1515L, 150, 100), gasProvider, keys, valuesOfKeys).send();
+        addKey(key, entity.getContractAddress());
+      } catch (Exception e) {
+        resultSuccess = Status.ERROR;
+      }
+      resultSuccess = Status.OK;
     }
-    return Status.OK;
+    return resultSuccess;
   }
 
   @Override

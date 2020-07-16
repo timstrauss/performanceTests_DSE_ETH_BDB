@@ -16,31 +16,20 @@ contract EthereumYCSB {
     }
 
     function getField(string[] memory selectFields) public view returns(string[] memory) {
-        string[] memory values = new string[](selectFields.length + 1);
-        values[0] = "dummy";
+        string[] memory values = new string[](selectFields.length);
 
         for (uint i = 0; i < selectFields.length; i++) {
-            values[i+1] = fields[selectFields[i]];
-        }
-
-        return values;
-    }
-
-    function getFieldNames() public view returns(string[] memory) {
-        string[] memory values = new string[](possibleFields.length + 1);
-        values[0] = "dummy";
-        for (uint i = 0; i < possibleFields.length; i++) {
-            values[i + 1] = possibleFields[i];
+            values[i] = fields[selectFields[i]];
         }
 
         return values;
     }
 
     function getField() public view returns(string[] memory) {
-        string[] memory values = new string[](possibleFields.length + 1);
-        values[0] = "dummy";
+        string[] memory values = new string[](possibleFields.length);
+
         for (uint i = 0; i < possibleFields.length; i++) {
-            values[i + 1] = fields[possibleFields[i]];
+            values[i] = fields[possibleFields[i]];
         }
 
         return values;

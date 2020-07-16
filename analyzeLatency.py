@@ -80,7 +80,7 @@ the_table = plt.table(cellText=[[dseSizeArray1, dseSizeArray2, dseSizeArray4, ds
                       loc='bottom')
 
 the_table.auto_set_font_size(False)
-the_table.set_fontsize(12)
+the_table.set_fontsize(14)
 
 plt.subplots_adjust(bottom=0.2)
 plt.xscale('log', basex=2)
@@ -160,7 +160,7 @@ the_table = plt.table(cellText=[[dseSizeArray1, dseSizeArray2, dseSizeArray4, ds
                       loc='bottom')
 
 the_table.auto_set_font_size(False)
-the_table.set_fontsize(12)
+the_table.set_fontsize(14)
 
 plt.subplots_adjust(bottom=0.2)
 plt.xscale('log', basex=2)
@@ -240,7 +240,7 @@ the_table = plt.table(cellText=[[dseSizeArray1, dseSizeArray2, dseSizeArray4, ds
                       loc='bottom')
 
 the_table.auto_set_font_size(False)
-the_table.set_fontsize(12)
+the_table.set_fontsize(14)
 
 plt.subplots_adjust(bottom=0.2)
 plt.xscale('log', basex=2)

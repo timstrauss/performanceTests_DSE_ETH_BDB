@@ -14,12 +14,13 @@ import static java.lang.Thread.sleep;
 public class OwnCassandraClient extends DB {
 
   private CqlSession session;
+  private static final boolean retry = false;
 
   @Override
   public void init() throws DBException {
     try {
       session = CqlSession.builder()
-          .addContactPoint(new InetSocketAddress("127.0.0.1", 9042))
+          .addContactPoint(new InetSocketAddress("172.20.8.223", 9042))
           .withAuthCredentials("cassandra", "cassandra")
           .withLocalDatacenter("Cassandra")
           .build();
@@ -41,19 +42,21 @@ public class OwnCassandraClient extends DB {
       statement.deleteCharAt(statement.length() - 1);
     }
     statement.append(" FROM testspace.test WHERE key = '").append(key).append("';");
-    try {
-      List<Row> rs = session.execute(statement.toString()).all();
-      for (Row r : rs) {
-        for (ColumnDefinition column : r.getColumnDefinitions()) {
-          result.put(column.getName().toString(), new StringByteIterator(r.getString(column.getName().toString())));
+    Status resultSuccess = null;
+    while (resultSuccess == null || (resultSuccess != Status.OK && retry)) {
+      try {
+        List<Row> rs = session.execute(statement.toString()).all();
+        for (Row r : rs) {
+          for (ColumnDefinition column : r.getColumnDefinitions()) {
+            result.put(column.getName().toString(), new StringByteIterator(r.getString(column.getName().toString())));
+          }
         }
+        resultSuccess = Status.OK;
+      } catch (Exception e) {
+        resultSuccess = Status.ERROR;
       }
-      return Status.OK;
-    } catch (Exception e) {
-      System.out.println(statement.toString());
-      e.printStackTrace();
-      return Status.ERROR;
     }
+    return resultSuccess;
   }
 
   @Override
@@ -69,14 +72,16 @@ public class OwnCassandraClient extends DB {
     }
     statement.deleteCharAt(statement.length() - 1);
     statement.append(" WHERE key = '").append(key).append("';");
-    try {
-      session.execute(statement.toString());
-      return Status.OK;
-    } catch (Exception e) {
-      System.out.println(statement.toString());
-      e.printStackTrace();
-      return Status.ERROR;
+    Status resultSuccess = null;
+    while (resultSuccess == null || (resultSuccess != Status.OK && retry)) {
+      try {
+        session.execute(statement.toString());
+        resultSuccess = Status.OK;
+      } catch (Exception e) {
+        resultSuccess = Status.ERROR;
+      }
     }
+    return resultSuccess;
   }
 
   @Override
@@ -88,12 +93,16 @@ public class OwnCassandraClient extends DB {
       valuesString.append("'" + values.get(property).toString().replace("'", "''") + "'").append(",");
     }
     statement.append("key) VALUES (").append(valuesString.toString()).append("'" + key + "');");
-    try {
-      session.execute(statement.toString());
-      return Status.OK;
-    } catch (Exception e) {
-      return Status.ERROR;
+    Status resultSuccess = null;
+    while (resultSuccess == null || (resultSuccess != Status.OK && retry)) {
+      try {
+        session.execute(statement.toString());
+        resultSuccess = Status.OK;
+      } catch (Exception e) {
+        resultSuccess = Status.ERROR;
+      }
     }
+    return resultSuccess;
   }
 
   @Override
